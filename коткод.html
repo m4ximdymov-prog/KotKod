@@ -1,0 +1,2829 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>КотКод — российский аналог Scratch</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐱</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/blockly@10.4.3/blockly.min.js"></script>
+<style>
+:root{
+--bg:#05070f; --panel:#0f1626; --ink:#e6edf7; --mut:#8b9bb5;
+--vio:#2563eb; --vio-l:#1e293b; --pink:#3b82f6; --amb:#60a5fa;
+--grn:#22c55e; --red:#ef4444; --bord:#1f2937;
+--r:18px; --sh:0 10px 30px rgba(0,20,60,.55);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:Rubik,system-ui,sans-serif;background:var(--bg);color:var(--ink);transition:background .3s,color .3s}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+background:radial-gradient(700px 400px at 8% -5%,#1e3a8a88,transparent 60%),
+radial-gradient(600px 400px at 95% 105%,#1e40af66,transparent 60%),
+radial-gradient(400px 300px at 50% 50%,#0c1a3a55,transparent 70%)}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#2a3b5c;border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:#3b82f6}
+::-webkit-scrollbar-track{background:#0a0f1c}
+.btn{border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;
+padding:9px 16px;border-radius:12px;transition:.15s;display:inline-flex;align-items:center;gap:7px;
+text-decoration:none;color:var(--ink)}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(0) scale(.97)}
+.btn-primary{color:#fff;background:linear-gradient(135deg,#1d4ed8,#3b82f6);box-shadow:0 6px 16px #1d4ed866}
+.btn-ghost{background:#0f1626;border:1.5px solid var(--bord);color:var(--ink)}
+.btn-ghost:hover{border-color:#3b82f6;background:#172239;color:#93c5fd}
+.btn-big{font-size:17px;padding:15px 30px;border-radius:16px}
+.btn-icon{padding:9px 12px;font-size:16px}
+@keyframes ctaPulse{0%,100%{box-shadow:0 6px 16px #1d4ed866}50%{box-shadow:0 8px 30px #3b82f6cc}}
+.btn-cta{animation:ctaPulse 2.2s ease-in-out infinite}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease}
+.reveal.vis{opacity:1;transform:none}
+@keyframes gradMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes floaty{50%{transform:translateY(-13px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+.shake{animation:shake .4s}
+@keyframes appIn{from{opacity:0;transform:scale(.985)}}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+/* ================= ЛЕНДИНГ ================= */
+.l-nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:20px;
+padding:13px 6vw;background:#05070fcc;backdrop-filter:blur(12px);border-bottom:1px solid var(--bord)}
+.l-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;color:var(--ink)}
+.l-logo .badge{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:22px;
+background:linear-gradient(135deg,#1d4ed8,#3b82f6);box-shadow:0 5px 14px #1d4ed877;transition:.3s}
+.l-logo:hover .badge{transform:rotate(-10deg) scale(1.1)}
+.l-nav a.nl{color:var(--mut);text-decoration:none;font-weight:600;font-size:14px;transition:.12s}
+.l-nav a.nl:hover{color:#93c5fd}
+.hero{position:relative;display:flex;align-items:center;gap:50px;padding:64px 6vw 56px;flex-wrap:wrap}
+.hero-txt{flex:1;min-width:320px}
+.hero-badge{display:inline-block;background:#1e293b;color:#93c5fd;font-weight:700;font-size:13px;
+padding:7px 15px;border-radius:99px;margin-bottom:18px;box-shadow:inset 0 0 0 1.5px #1d4ed8;animation:pop .5s ease}
+.hero h1{font-size:clamp(34px,4.6vw,58px);font-weight:900;line-height:1.08;letter-spacing:-1px;color:#f1f5f9}
+.hero h1 em{font-style:normal;background:linear-gradient(135deg,#60a5fa,#3b82f6,#1d4ed8,#93c5fd);
+background-size:250% 250%;animation:gradMove 5s ease infinite;
+-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{margin:18px 0 28px;font-size:17px;color:#94a3b8;max-width:520px;line-height:1.55}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+.hero-art{position:relative;width:300px;height:300px;margin:auto}
+.hero-cat{width:100%;height:100%;border-radius:56px;display:grid;place-items:center;font-size:160px;
+background:linear-gradient(135deg,#1d4ed8,#3b82f6,#60a5fa);box-shadow:0 30px 60px #1d4ed8aa, inset 0 0 40px #00000066;
+animation:floaty 4s ease-in-out infinite;transition:.3s}
+.hero-art:hover .hero-cat{transform:scale(1.05) rotate(2deg)}
+.fchip{position:absolute;background:#0f1626;color:#e6edf7;border:1.5px solid var(--bord);
+border-radius:12px;padding:8px 14px;font-weight:700;font-size:13px;
+box-shadow:0 12px 26px #00000088;animation:floaty 3s ease-in-out infinite;white-space:nowrap}
+.fchip.c1{top:-14px;left:-58px;color:#fbbf24;border-color:#fbbf2455}
+.fchip.c2{top:40%;right:-72px;color:#60a5fa;animation-delay:.6s;border-color:#3b82f655}
+.fchip.c3{bottom:-16px;left:-30px;color:#4ade80;animation-delay:1.2s;border-color:#22c55e55}
+section.land{position:relative;padding:56px 6vw;max-width:1300px;margin:0 auto}
+.land h2{font-size:clamp(26px,3vw,38px);font-weight:800;letter-spacing:-.5px;margin-bottom:8px;color:#f1f5f9}
+.land .sub{color:var(--mut);font-size:15.5px;margin-bottom:30px;max-width:640px;line-height:1.5}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:linear-gradient(145deg,#0f1626,#111d35);border-radius:20px;padding:24px 20px;
+box-shadow:var(--sh);transition:.25s;border:1px solid #1f293799}
+.card:hover{transform:translateY(-6px) rotate(-.6deg);box-shadow:0 18px 40px #1d4ed844;border-color:#3b82f6}
+.card .ic{font-size:34px;margin-bottom:12px;display:inline-block;transition:.25s}
+.card:hover .ic{transform:scale(1.2) rotate(8deg)}
+.card h3{font-size:16.5px;font-weight:700;margin-bottom:7px;color:#f1f5f9}
+.card p{font-size:13.5px;color:var(--mut);line-height:1.5}
+.stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
+.stat{background:linear-gradient(145deg,#0f1626,#111d35);border-radius:16px;padding:14px 22px;
+box-shadow:var(--sh);text-align:center;min-width:120px;transition:.2s;border:1px solid var(--bord)}
+.stat:hover{transform:translateY(-4px);border-color:#3b82f6}
+.stat b{display:block;font-size:30px;font-weight:900;color:#60a5fa}
+.stat span{font-size:12.5px;color:var(--mut);font-weight:600}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:26px}
+.step-card{background:linear-gradient(145deg,#0f1626,#111d35);border-radius:20px;padding:26px 22px;
+box-shadow:var(--sh);position:relative;transition:.25s;border:1px solid var(--bord)}
+.step-card:hover{transform:translateY(-6px);border-color:#3b82f6}
+.step-card .n{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+color:#fff;font-weight:800;display:grid;place-items:center;margin-bottom:14px;font-size:16px;
+transition:.25s;box-shadow:0 5px 14px #1d4ed866}
+.step-card:hover .n{transform:scale(1.15) rotate(-6deg)}
+.step-card h3{font-size:16.5px;margin-bottom:7px;color:#f1f5f9}
+.step-card p{font-size:13.5px;color:var(--mut);line-height:1.5}
+.school-wrap{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:34px}
+.school-box{flex:1;min-width:300px;background:linear-gradient(145deg,#0f1626,#111d35);
+border-radius:20px;padding:26px;box-shadow:var(--sh);transition:.25s;border:1px solid var(--bord)}
+.school-box:hover{transform:translateY(-5px);border-color:#3b82f6}
+.school-box h3{font-size:17px;margin-bottom:14px;color:#f1f5f9}
+.school-box li{font-size:14px;color:#94a3b8;margin:0 0 10px 18px;line-height:1.5}
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:30px}
+.price-card{background:linear-gradient(145deg,#0f1626,#111d35);border-radius:22px;padding:28px 24px;
+box-shadow:var(--sh);display:flex;flex-direction:column;transition:.25s;border:2px solid var(--bord)}
+.price-card:hover{transform:translateY(-6px);border-color:#3b82f6}
+.price-card.hot{border-color:#3b82f6;background:linear-gradient(180deg,#0f1d3a,#172549);box-shadow:0 15px 40px #1d4ed855}
+.price-card .tag{font-size:12px;font-weight:800;color:#60a5fa;background:#1e293b;
+padding:4px 11px;border-radius:99px;align-self:flex-start;margin-bottom:12px;border:1px solid #3b82f6}
+.price-card h3{font-size:19px;margin-bottom:6px;color:#f1f5f9}
+.price-card .price{font-size:32px;font-weight:900;margin:8px 0 2px;color:#60a5fa}
+.price-card .per{font-size:12.5px;color:var(--mut);margin-bottom:16px}
+.price-card ul{list-style:none;margin-bottom:22px;flex:1}
+.price-card li{font-size:13.5px;color:#94a3b8;padding:5px 0 5px 24px;position:relative}
+.price-card li::before{content:'✔';position:absolute;left:0;color:var(--grn);font-weight:700}
+.l-foot{position:relative;background:#020409;color:#94a3b8;padding:40px 6vw 26px;margin-top:30px;border-top:1px solid var(--bord)}
+.l-foot .subs{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+.l-foot .subs b{font-size:16px;color:#e6edf7}
+.soc{display:inline-flex;align-items:center;gap:8px;background:#0f1626;color:#e6edf7;text-decoration:none;
+padding:10px 18px;border-radius:12px;font-weight:600;font-size:14px;transition:.15s;border:1px solid var(--bord)}
+.soc:hover{background:#1d4ed8;border-color:#3b82f6;transform:translateY(-2px)}
+.l-foot .bottom{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+border-top:1px solid #1f293788;padding-top:18px;font-size:13px;color:#8b9bb5}
+.l-foot .bottom a{color:#8b9bb5;cursor:pointer;text-decoration:underline}
+.l-foot .bottom a:hover{color:#60a5fa}
+/* ================= ПРИЛОЖЕНИЕ ================= */
+#app{display:none;flex-direction:column;height:100vh;overflow:hidden;position:relative;z-index:1;
+animation:appIn .45s ease;background:var(--bg)}
+header{display:flex;align-items:center;gap:12px;padding:10px 18px;background:#05070fcc;
+backdrop-filter:blur(12px);border-bottom:1px solid var(--bord)}
+.logo{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:26px;
+background:linear-gradient(135deg,#1d4ed8,#3b82f6);box-shadow:0 6px 16px #1d4ed877;transition:.3s}
+.logo:hover{transform:rotate(-10deg) scale(1.08)}
+.title{font-size:21px;font-weight:800;letter-spacing:-.3px;color:#f1f5f9}
+.title small{display:block;font-size:11px;font-weight:500;color:var(--mut)}
+.proj-chip{font-size:12px;font-weight:600;color:var(--mut);background:#0f1626;padding:7px 12px;
+border-radius:10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+cursor:pointer;transition:.15s;border:1.5px solid var(--bord)}
+.proj-chip:hover{color:#60a5fa;border-color:#3b82f6;background:#1e293b}
+.spacer{flex:1}
+main{flex:1;min-height:0;display:flex;gap:14px;padding:14px}
+.panel{background:var(--panel);border-radius:var(--r);box-shadow:var(--sh);border:1px solid var(--bord)}
+.code-panel{flex:1;min-width:420px;overflow:hidden;display:flex;flex-direction:column}
+.right-col{width:540px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.tabbar{display:flex;gap:6px;padding:9px 12px;border-bottom:1px solid var(--bord);align-items:center}
+.tab{border:none;background:transparent;font-family:inherit;font-size:14px;font-weight:600;
+color:var(--mut);padding:8px 18px;border-radius:11px;cursor:pointer;transition:.2s;position:relative}
+.tab:hover{background:#1e293b}
+.tab.sel{background:#172239;color:#60a5fa;box-shadow:inset 0 0 0 1.5px #3b82f6}
+.ed-name{margin-left:auto;font-size:12.5px;color:var(--mut);font-weight:600;padding-right:6px}
+#wsWrap{flex:1;position:relative;min-height:0}
+#blocklyDiv{position:absolute;inset:0}
+#editor{flex:1;min-height:0;display:none;flex-direction:column}
+/* кнопка дополнений ✳️ внизу палитры (поверх Blockly, z-index:80) */
+#extBtn{position:absolute;left:0;bottom:0;z-index:80;width:120px;height:58px;border:none;cursor:pointer;
+background:linear-gradient(135deg,#7c3aed,#8b5cf6);color:#fff;font-size:27px;line-height:1;
+display:grid;place-items:center;border-radius:0 16px 0 0;box-shadow:0 -6px 20px #7c3aed66;transition:.15s}
+#extBtn:hover{filter:brightness(1.15);box-shadow:0 -8px 26px #7c3aed99}
+#extBtn:active{transform:scale(.96)}
+/* ===== ВКЛАДКА НАСТРОЙКИ ===== */
+#settingsPane{display:none;flex:1;min-height:0;overflow-y:auto;padding:20px}
+.set-sec{background:#0f1626;border:1.5px solid var(--bord);border-radius:16px;padding:16px 18px;margin-bottom:14px}
+.set-sec h4{font-size:15px;color:#f1f5f9;margin-bottom:8px}
+.set-hint{font-size:12.5px;color:var(--mut);margin-bottom:12px;line-height:1.5}
+.wall-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.wall-btn{border:1.5px solid var(--bord);background:#0a0f1c;color:var(--mut);font-family:inherit;
+font-size:13px;font-weight:700;padding:9px 14px;border-radius:11px;cursor:pointer;transition:.15s}
+.wall-btn:hover{border-color:#3b82f6;color:#93c5fd;transform:translateY(-1px)}
+.wall-btn.on{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border-color:#3b82f6;box-shadow:0 4px 12px #1d4ed855}
+.wall-presets{display:flex;gap:8px;flex-wrap:wrap}
+.wall-presets .btn{padding:7px 12px;font-size:12.5px}
+.theme-mini{display:flex;gap:8px;flex-wrap:wrap}
+.theme-btn{border:1.5px solid var(--bord);background:#0a0f1c;color:var(--mut);font-family:inherit;font-size:13px;
+font-weight:700;padding:9px 16px;border-radius:11px;cursor:pointer;transition:.15s}
+.theme-btn:hover{transform:translateY(-1px);border-color:#3b82f6;color:#93c5fd}
+.theme-btn.sel{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border-color:#3b82f6}
+.mini-theme{display:flex;gap:5px}
+.mini-theme button{width:33px;height:33px;border-radius:10px;border:1.5px solid var(--bord);background:#0f1626;
+cursor:pointer;font-size:15px;transition:.15s;color:var(--ink)}
+.mini-theme button:hover{border-color:#3b82f6;transform:translateY(-1px)}
+.mini-theme button.sel{background:#1d4ed8;border-color:#3b82f6}
+.set-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.set-row label{font-size:13px;color:var(--mut);font-weight:600}
+.ed-bar{display:flex;align-items:center;gap:10px;padding:9px 12px;flex-wrap:wrap;
+border-bottom:1px solid var(--bord);background:#0a0f1c}
+.ed-group{display:flex;align-items:center;gap:5px;padding:3px;background:#0f1626;border-radius:11px;flex-wrap:wrap}
+.ed-btn{border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;
+color:var(--ink);padding:7px 11px;border-radius:8px;cursor:pointer;transition:.12s;display:flex;align-items:center;gap:4px}
+.ed-btn:hover{background:#1e293b;transform:translateY(-1px)}
+.ed-btn.sel{background:#1e293b;color:#60a5fa;box-shadow:0 2px 8px #1d4ed844}
+.tool{font-size:16px;padding:7px 9px}
+.swatch{width:21px;height:21px;border-radius:6px;border:2px solid #0f1626;cursor:pointer;
+box-shadow:0 0 0 1px #3b82f644;transition:.1s}
+.swatch:hover{transform:scale(1.25)}
+#edColor{width:32px;height:27px;border:none;background:none;cursor:pointer;padding:0}
+#edSize{width:86px;accent-color:var(--vio)}
+#pxSize{font-family:inherit;font-size:12.5px;font-weight:600;padding:6px 8px;border-radius:8px;
+border:1.5px solid var(--bord);background:#0f1626;color:var(--ink);cursor:pointer}
+.zoom-lbl{font-size:12.5px;font-weight:700;color:var(--mut);min-width:46px;text-align:center;user-select:none}
+.cos-bar{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--bord);background:#0a0f1c}
+.cos-title{font-size:12.5px;font-weight:700;color:var(--mut);white-space:nowrap}
+.cos-hint{font-size:11px;color:var(--mut);margin-left:auto;white-space:nowrap}
+#costumeList{display:flex;gap:8px;overflow-x:auto;padding:2px;flex:1;min-width:0}
+.cos-bar .spr-card{min-width:62px;max-width:62px;padding:6px 4px 5px;background:#0f1626}
+.cos-bar .spr-card .em{font-size:26px}
+.cos-bar .spr-card img{height:26px}
+.cos-bar .spr-card .nm{font-size:10px}
+.ed-wrap{flex:1;min-height:0;display:flex;overflow:auto;padding:14px}
+#edCanvas{margin:auto;max-width:none;background:
+linear-gradient(#3b82f622 1px,transparent 1px) 0 0/24px 24px,
+linear-gradient(90deg,#3b82f622 1px,transparent 1px) 0 0/24px 24px,
+repeating-conic-gradient(#111827 0% 25%,#0f1626 0% 50%) 0 0/22px 22px;
+border-radius:12px;box-shadow:0 6px 22px #0008;cursor:crosshair;touch-action:none}
+#edCanvas.pxmode{background:#0d1424;image-rendering:pixelated;box-shadow:0 6px 22px #0008,0 0 0 1px #3b82f644}
+.stage-panel{padding:12px 14px}
+.stage-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.flag-btn,.stop-btn{width:46px;height:46px;border-radius:50%;border:1px solid #ffffff2e;cursor:pointer;
+display:grid;place-items:center;color:#fff;transition:.2s;position:relative}
+.flag-btn svg,.stop-btn svg{width:21px;height:21px;pointer-events:none;filter:drop-shadow(0 2px 3px #00000077)}
+.flag-btn{background:radial-gradient(circle at 32% 26%,#a7f3d0,#34d399 30%,#16a34a 62%,#15803d 100%);
+box-shadow:inset 0 2px 5px #ffffff99,inset 0 -5px 9px #00000055,0 6px 18px #22c55e66}
+.stop-btn{background:radial-gradient(circle at 32% 26%,#fecaca,#f87171 30%,#dc2626 62%,#b91c1c 100%);
+box-shadow:inset 0 2px 5px #ffffff99,inset 0 -5px 9px #00000055,0 6px 18px #ef444466}
+.flag-btn:hover{transform:scale(1.12) rotate(8deg);box-shadow:inset 0 2px 5px #ffffff99,inset 0 -5px 9px #00000055,0 8px 26px #22c55e99}
+.stop-btn:hover{transform:scale(1.12);box-shadow:inset 0 2px 5px #ffffff99,inset 0 -5px 9px #00000055,0 8px 26px #ef444499}
+.flag-btn:active,.stop-btn:active{transform:scale(.94)}
+.flag-btn.run::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:3px solid #4ade80aa;animation:runRing 1s ease-out infinite}
+@keyframes runRing{from{transform:scale(.85);opacity:1}to{transform:scale(1.55);opacity:0}}
+.flag-btn.run svg{animation:flagWave .7s ease-in-out infinite}
+@keyframes flagWave{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+.tb-label{font-size:12px;color:var(--mut);font-weight:600}
+select{font-family:inherit;font-size:13px;font-weight:500;padding:7px 10px;border-radius:10px;
+border:1.5px solid var(--bord);background:#0f1626;color:var(--ink);cursor:pointer;max-width:150px}
+.icon-btn{width:36px;height:36px;border-radius:10px;border:1.5px solid var(--bord);
+background:#0f1626;color:var(--ink);cursor:pointer;font-size:16px;transition:.15s}
+.icon-btn:hover{background:#1e293b;border-color:#3b82f6;transform:translateY(-1px)}
+/* ===== НИЖНЯЯ ПАНЕЛЬ (фон + музыка переехали сюда) ===== */
+.bottom-bar{display:flex;align-items:center;gap:8px;padding:10px 12px;flex-wrap:wrap}
+.bottom-bar .hint{font-size:11px;color:var(--mut);font-weight:600}
+.stage-wrap{position:relative;width:480px;height:360px;margin:0 auto}
+.stage{position:absolute;top:0;left:0;width:480px;height:360px;overflow:hidden;
+border-radius:14px;border:3px solid #3b82f633;background:#0a0f1c;transition:background .4s;transform-origin:top left}
+.stage.w-top{border-top-color:#3b82f6}
+.stage.w-bottom{border-bottom-color:#3b82f6}
+.stage.w-left{border-left-color:#3b82f6}
+.stage.w-right{border-right-color:#3b82f6}
+.stage-panel:fullscreen{border-radius:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px;background:#05070f}
+.stage-panel:fullscreen .stage-toolbar,.stage-panel.fs-fallback .stage-toolbar{width:min(900px,94vw);position:relative;z-index:6}
+.stage-panel:fullscreen .props,.stage-panel.fs-fallback .props{position:relative;z-index:6}
+.stage-panel.fs-fallback{position:fixed!important;inset:0;z-index:80;border-radius:0;
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#05070f}
+.props{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap;align-items:flex-end}
+.props label{font-size:10.5px;color:var(--mut);font-weight:700;display:flex;flex-direction:column;
+gap:3px;align-items:center;text-transform:uppercase;letter-spacing:.4px}
+.props input{width:72px;padding:6px 8px;border:1.5px solid var(--bord);border-radius:9px;
+font-family:inherit;text-align:center;font-weight:700;font-size:13px;color:var(--ink);
+background:#0f1626;outline:none;transition:.15s}
+.props input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px #1d4ed844}
+.rot-group{display:flex;align-items:center;gap:3px;background:#0f1626;border:1.5px solid var(--bord);
+border-radius:11px;padding:3px}
+.rot-lbl{font-size:9.5px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.3px;padding:0 4px}
+.rot-btn{width:29px;height:29px;border-radius:8px;border:none;background:transparent;color:var(--ink);
+font-size:14px;font-weight:800;cursor:pointer;transition:.13s;font-family:inherit}
+.rot-btn:hover{background:#1e293b;color:#93c5fd;transform:translateY(-1px)}
+.rot-btn.sel{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff}
+#varLayer{position:absolute;top:8px;left:8px;z-index:6;display:flex;flex-direction:column;gap:5px;pointer-events:none}
+.var-chip{background:#0f1626dd;border:1.5px solid var(--bord);border-radius:10px;
+padding:3px 10px;font-size:12px;box-shadow:0 2px 6px #0008;display:flex;gap:7px;align-items:center;animation:pop .2s}
+.var-chip span{color:var(--mut)} .var-chip b{color:#60a5fa}
+#penLayer{position:absolute;inset:0;z-index:2;pointer-events:none}
+.sprite{position:absolute;user-select:none;font-size:54px;line-height:1;touch-action:none;z-index:3;pointer-events:none}
+.sprite img{height:66px;width:auto;display:block}
+.sprite span{display:block}
+.sprite.sel img{filter:drop-shadow(0 0 3px #3b82f6) drop-shadow(0 0 7px #3b82f6aa)}
+.sprite.sel span{filter:drop-shadow(0 0 4px #3b82f6) drop-shadow(0 0 8px #3b82f6aa)}
+.bubble{position:absolute;z-index:7;background:#0f1626;border:2.5px solid #3b82f6;border-radius:15px;
+padding:7px 11px;max-width:170px;font-size:13px;font-weight:500;color:#e6edf7;transform:translateY(-100%);
+animation:pop .18s;pointer-events:none;box-shadow:0 4px 10px #0008}
+.bubble::after{content:'';position:absolute;left:14px;bottom:-9px;border:6px solid transparent;border-top-color:#3b82f6}
+#coordChip{position:absolute;bottom:6px;right:8px;z-index:6;font-size:11px;color:var(--mut);
+background:#0f1626b8;padding:2px 9px;border-radius:8px;pointer-events:none}
+.sprite-panel{flex:1;min-height:0;display:flex;flex-direction:column;padding:12px 14px;overflow-y:auto}
+.sprite-panel .head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sprite-panel h3{font-size:15px;font-weight:700;color:#f1f5f9}
+#spriteList{display:flex;gap:10px;overflow-x:auto;padding:6px 2px 8px}
+.spr-card{min-width:80px;max-width:80px;padding:9px 6px 7px;border-radius:14px;background:#0f1626;
+border:2px solid transparent;text-align:center;cursor:pointer;position:relative;transition:.2s;animation:pop .2s}
+.spr-card:hover{transform:translateY(-4px) scale(1.03);box-shadow:0 8px 16px #0008;border-color:#3b82f655}
+.spr-card.sel{border-color:#3b82f6;background:#172239}
+.spr-card .em{font-size:36px;line-height:1.1}
+.spr-card img{height:36px}
+.spr-card .nm{font-size:11px;color:var(--mut);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.spr-del{position:absolute;top:-7px;right:-7px;width:21px;height:21px;border-radius:50%;
+background:var(--red);color:#fff;font-size:11px;border:2px solid #0f1626;cursor:pointer;
+display:none;align-items:center;justify-content:center;line-height:1}
+.spr-card:hover .spr-del{display:flex}
+.spr-add{border:2px dashed #3b82f6;background:#0a0f1c;color:var(--mut);font-size:28px;
+display:flex;align-items:center;justify-content:center;min-height:78px}
+.spr-add:hover{border-color:#60a5fa;color:#60a5fa;background:#172239}
+.modal{position:fixed;inset:0;z-index:50;display:none;place-items:center;background:#02040999;backdrop-filter:blur(8px)}
+.modal.open{display:grid}
+.modal-card{background:#0f1626;border-radius:22px;box-shadow:0 30px 80px #000d;
+width:min(940px,94vw);max-height:86vh;display:flex;flex-direction:column;overflow:hidden;
+animation:pop .22s;border:1px solid var(--bord)}
+.modal-head{padding:16px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bord)}
+.modal-head h2{font-size:19px;font-weight:800;color:#f1f5f9}
+.close-x{width:34px;height:34px;border-radius:10px;border:none;background:#1e293b;color:#e6edf7;cursor:pointer;font-size:15px;transition:.2s}
+.close-x:hover{background:var(--red);color:#fff;transform:rotate(90deg)}
+.modal-body{padding:20px 24px;overflow-y:auto;font-size:14px;line-height:1.6;color:#94a3b8}
+.modal-body h4{color:#f1f5f9;margin:14px 0 6px}
+.lesson-body{display:flex;flex:1;min-height:0}
+.lesson-list{width:280px;border-right:1px solid var(--bord);overflow-y:auto;padding:10px}
+.lesson-item{display:flex;gap:11px;padding:11px;border-radius:13px;cursor:pointer;align-items:center;transition:.15s;margin-bottom:3px}
+.lesson-item:hover{background:#1e293b;transform:translateX(4px)}
+.lesson-item.sel{background:#172239}
+.lesson-item .em{font-size:27px}
+.lesson-item .t{font-size:13.5px;font-weight:700;color:#f1f5f9}
+.lesson-item .d{font-size:11px;color:var(--mut)}
+.lesson-group{font-size:10.5px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.7px;padding:12px 12px 5px}
+.lv{display:inline-block;font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:99px;margin-top:4px}
+.lv-1{background:#22c55e26;color:#4ade80;border:1px solid #22c55e66}
+.lv-2{background:#f59e0b26;color:#fbbf24;border:1px solid #f59e0b66}
+.lv-3{background:#ef444426;color:#f87171;border:1px solid #ef444466}
+.lesson-detail{flex:1;overflow-y:auto;padding:20px 24px}
+.lesson-detail h2{color:#f1f5f9}
+.lesson-detail .goal{font-size:14px;color:#94a3b8;background:#1e293b;border-left:4px solid #3b82f6;
+padding:10px 14px;border-radius:0 12px 12px 0;margin-bottom:14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.chip{font-size:11px;font-weight:700;background:#1e293b;color:#93c5fd;padding:4px 11px;border-radius:99px;border:1px solid #1d4ed855}
+.step{display:flex;gap:12px;background:#172239;border:1.5px solid var(--bord);border-radius:13px;
+padding:11px 14px;margin-bottom:9px;font-size:13.5px;line-height:1.45;color:#cbd5e1;transition:.15s}
+.step:hover{transform:translateX(4px);border-color:#3b82f6}
+.step .n{min-width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+color:#fff;font-weight:700;font-size:13px;display:grid;place-items:center}
+.step b{color:#60a5fa}
+.task-box{background:#1e293b;border:1.5px solid #3b82f6;border-radius:13px;padding:11px 14px;font-size:13px;margin:12px 0;color:#e6edf7}
+.emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;padding:18px 22px;overflow-y:auto}
+.emoji-grid button{font-size:32px;padding:9px;border-radius:13px;border:2px solid transparent;background:#1e293b;cursor:pointer;transition:.15s}
+.emoji-grid button:hover{background:#172239;border-color:#3b82f6;transform:scale(1.15) rotate(-5deg)}
+/* ===== ВЫБОР ФОНА (плиткой, как спрайты) ===== */
+.bg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:18px 22px;overflow-y:auto}
+.bg-tile{height:92px;border-radius:14px;border:3px solid transparent;cursor:pointer;position:relative;
+transition:.15s;box-shadow:0 4px 12px #0006;overflow:hidden}
+.bg-tile:hover{transform:translateY(-3px) scale(1.03);border-color:#60a5fa}
+.bg-tile.sel{border-color:#3b82f6;box-shadow:0 0 0 3px #1d4ed855,0 6px 16px #0008}
+.bg-tile .bn{position:absolute;left:0;right:0;bottom:0;padding:4px 8px;font-size:11px;font-weight:700;
+color:#fff;text-shadow:0 1px 4px #000c;background:linear-gradient(transparent,#00000088)}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--bord);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.t-input{font-family:inherit;font-size:15px;font-weight:600;padding:11px 16px;border-radius:12px;
+border:1.5px solid var(--bord);outline:none;width:220px;text-align:center;transition:.15s;background:#0a0f1c;color:var(--ink)}
+.t-input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px #1d4ed844}
+.j-row{display:flex;gap:8px;align-items:center;background:#1e293b;border-radius:10px;padding:8px 10px;margin-bottom:6px;animation:pop .2s}
+.j-row .nm{flex:1;font-weight:600;color:#e6edf7}
+.j-row select{max-width:70px;padding:5px 8px}
+.t-sec{background:#0f1626;border:1.5px solid var(--bord);border-radius:14px;padding:16px;margin-bottom:14px}
+.t-sec h4{margin:0 0 10px;font-size:15px;color:#f1f5f9}
+/* ===== ОКНО «СОЗДАТЬ БЛОК» ===== */
+#cbModal .modal-card{background:#fff;border-color:#cfd8e6}
+#cbModal .modal-head{background:#9068d6;border-bottom:none;position:relative;justify-content:center}
+#cbModal .modal-head h2{color:#fff}
+#cbModal .close-x{position:absolute;right:16px;top:50%;transform:translateY(-50%);background:#7a52c2;color:#fff}
+#cbModal .close-x:hover{background:var(--red)}
+.cb-stage{background:#dbe9f7;min-height:230px;display:flex;flex-direction:column;align-items:center;
+justify-content:center;gap:14px;padding:26px;position:relative;overflow:auto}
+.cb-trash{border:none;background:none;font-size:23px;cursor:pointer;transition:.15s;line-height:1}
+.cb-trash:hover{transform:scale(1.2)}
+.cb-block{background:#f65a7e;border-radius:9px;padding:11px 16px;display:flex;align-items:center;gap:7px;
+flex-wrap:wrap;color:#fff;font-weight:600;font-size:14px;box-shadow:0 6px 16px #f65a7e66;position:relative;max-width:92%}
+.cb-block::before{content:'';position:absolute;left:-1px;top:-6px;width:26px;height:12px;background:#f65a7e;border-radius:6px 6px 0 0}
+.cb-block::after{content:'';position:absolute;left:-1px;bottom:-6px;width:26px;height:12px;background:#f65a7e;border-radius:0 0 6px 6px}
+.cb-block input{font-family:inherit;border:none;outline:none;font-size:13.5px;font-weight:600}
+.cb-name{background:#fff;border-radius:6px;padding:7px 10px;width:170px;color:#3b4759}
+.cb-hole{background:#fff;border-radius:999px;padding:5px 10px;display:inline-flex;align-items:center}
+.cb-hole input{width:92px;color:#3b4759;background:transparent}
+.cb-hole.hex{border-radius:4px;clip-path:polygon(7% 0,93% 0,100% 50%,93% 100%,7% 100%,0 50%);padding:5px 14px}
+.cb-lbl input{background:transparent;color:#fff;width:96px;border-bottom:1.5px dashed #ffffff88;border-radius:0}
+.cb-options{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:20px 22px;background:#f4f6fb}
+.cb-card{border:1.5px solid #d7dce6;background:#fff;border-radius:10px;padding:18px 12px;display:flex;
+flex-direction:column;align-items:center;gap:7px;cursor:pointer;font-family:inherit;transition:.15s}
+.cb-card:hover{border-color:#9068d6;transform:translateY(-2px);box-shadow:0 8px 18px #9068d633}
+.cb-card b{color:#5f6b7e;font-size:15px;font-weight:700}
+.cb-card>span:last-child{font-size:13px;color:#8a94a6}
+.cb-ic{width:56px;height:42px;background:#f65a7e;border-radius:9px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:12px}
+.cb-ic.round::before{content:'';width:28px;height:22px;background:#e8385f;border-radius:999px}
+.cb-ic.hex::before{content:'';width:24px;height:24px;background:#e8385f;transform:rotate(45deg);border-radius:5px}
+.cb-foot{padding:14px 22px;display:flex;align-items:center;gap:10px;background:#fff;border-top:1px solid #e3e7ef;flex-wrap:wrap}
+.cb-check{color:#5f6b7e;font-size:14px;display:flex;gap:8px;align-items:center;cursor:pointer;user-select:none}
+.cb-check input{width:16px;height:16px;accent-color:#9068d6}
+/* ===== ДОПОЛНЕНИЯ — ТЕПЕРЬ ВО ВЕСЬ ЭКРАН ===== */
+#extModal .modal-card{width:100vw;height:100vh;max-height:100vh;border-radius:0;border:none}
+#extModal .ext-grid{flex:1;overflow-y:auto;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+align-content:start;gap:20px;padding:28px 34px}
+#extModal .ext-art{height:200px;font-size:70px}
+#extModal .ext-badge{top:168px}
+#extModal .ext-body{padding:46px 18px 18px}
+#extModal .modal-foot{padding:16px 34px}
+.ext-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px 22px}
+.ext-card{border:2px solid #cfd8e6;border-radius:14px;overflow:hidden;background:#fff;cursor:pointer;
+font-family:inherit;text-align:left;transition:.18s;padding:0;position:relative}
+.ext-card:hover{transform:translateY(-4px);box-shadow:0 14px 30px #7c3aed44;border-color:#8b5cf6}
+.ext-card.done{opacity:.75;cursor:default}
+.ext-card.done:hover{transform:none;box-shadow:none;border-color:#22c55e}
+.ext-art{height:150px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:58px;position:relative;overflow:hidden}
+.ext-art.music{background:radial-gradient(circle at 70% 20%,#e26bd8,#c74bd6 45%,#b13cc4)}
+.ext-art.pen{background:linear-gradient(180deg,#12b981,#0ea771)}
+.ext-art.pen::before{content:'';position:absolute;left:-30px;top:38%;width:70%;height:44px;
+background:linear-gradient(90deg,#f59e0b,#ef4444,#3b82f6,#22c55e);transform:skewY(-6deg);opacity:.85;clip-path:polygon(0 40%,100% 0,100% 100%,0 60%)}
+.ext-art.pen span{position:relative;z-index:1;transform:rotate(-8deg)}
+.ext-badge{position:absolute;left:16px;top:118px;width:52px;height:52px;border-radius:12px;background:#10b981;
+border:3px solid #fff;display:grid;place-items:center;font-size:24px;color:#fff;box-shadow:0 6px 14px #00000033}
+.ext-body{padding:42px 16px 16px}
+.ext-body h4{color:#3b4759;font-size:17px;margin-bottom:6px}
+.ext-body p{color:#7a8698;font-size:13.5px;line-height:1.45}
+.ext-done{position:absolute;right:12px;top:12px;background:#22c55e;color:#fff;font-size:12px;font-weight:700;
+padding:5px 10px;border-radius:99px;box-shadow:0 4px 10px #00000044}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);z-index:99;
+background:#1d4ed8;color:#fff;padding:11px 22px;border-radius:14px;font-size:14px;font-weight:500;
+box-shadow:0 10px 30px #0008;transition:.3s;opacity:0}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.blocklyToolboxDiv{background:#0f1626!important;padding:8px 6px 64px!important;border-right:1px solid var(--bord)!important}
+.blocklyTreeRow{border-radius:10px!important;margin-bottom:2px;height:34px!important;padding-left:10px!important;transition:.1s}
+.blocklyTreeRow:not(.blocklyTreeSelected):hover{background:#1e293b!important}
+.blocklyTreeSelected{background:#172239!important}
+.blocklyTreeLabel{font-family:Rubik!important;font-weight:600;font-size:13px;color:#e6edf7!important}
+.blocklyFlyoutBackground{fill:#0a0f1c;fill-opacity:.97}
+.blocklyText,.blocklyHtmlText{font-family:Rubik!important;font-weight:500}
+.blocklyMainBackground{stroke:none;fill:#111827!important}
+.blocklyScrollbarHandle{fill:#3b82f6!important;fill-opacity:.5}
+.blocklyScrollbarBackground{fill:#0a0f1c!important}
+.blocklyZoom{filter:drop-shadow(0 6px 14px #000d)}
+.blocklyZoom circle{fill:#0d1526!important;stroke:#2a3b5c!important;stroke-width:1.5!important;transition:.15s}
+.blocklyZoom path{fill:#8b9bb5!important;transition:.15s}
+.blocklyZoom g:hover circle{fill:#172239!important;stroke:#3b82f6!important}
+.blocklyZoom g:hover path{fill:#7db4ff!important}
+.blocklyTrash{filter:drop-shadow(0 6px 14px #000d)}
+.blocklyTrash path{fill:#5b6b84!important;opacity:1!important;transition:.15s}
+.blocklyTrash:hover path{fill:#f87171!important}
+/* ================= СВЕТЛАЯ ТЕМА ================= */
+body.light{--bg:#eef3fb;--panel:#fff;--ink:#0f172a;--mut:#5c6b85;--bord:#d9e2f0;--vio-l:#e2e8f0;--sh:0 10px 26px rgba(40,80,160,.16)}
+body.light::before{background:radial-gradient(700px 400px at 8% -5%,#bfdbfeaa,transparent 60%),
+radial-gradient(600px 400px at 95% 105%,#c7d2fe99,transparent 60%),
+radial-gradient(400px 300px at 50% 50%,#dbeafe77,transparent 70%)}
+body.light::-webkit-scrollbar-track{background:#e3eaf6}
+body.light::-webkit-scrollbar-thumb{background:#b9c8de}
+body.light .card,body.light .stat,body.light .step-card,body.light .school-box,body.light .price-card,
+body.light .panel,body.light .proj-chip,body.light .modal-card,body.light .t-sec,body.light .set-sec,
+body.light select,body.light .props input,body.light .t-input,body.light .btn-ghost,body.light .soc,
+body.light .spr-card,body.light .ed-group,body.light .emoji-grid button,body.light .lesson-item.sel,
+body.light .step,body.light .task-box,body.light .j-row,body.light .var-chip,body.light .bubble,
+body.light #coordChip,body.light .wall-btn,body.light .theme-btn,body.light .rot-group,
+body.light .close-x,body.light .icon-btn,body.light .mini-theme button,body.light .hero-badge{
+background:#fff;border-color:#d9e2f0;color:#0f172a}
+body.light .hero-badge{background:#dbeafe;color:#1d4ed8;box-shadow:inset 0 0 0 1.5px #3b82f6}
+body.light .hero h1,body.light .land h2,body.light .card h3,body.light .step-card h3,body.light .school-box h3,
+body.light .price-card h3,body.light .title,body.light .set-sec h4,body.light .sprite-panel h3,
+body.light .modal-head h2,body.light .lesson-detail h2,body.light .lesson-item .t,body.light .l-logo,
+body.light .t-sec h4,body.light .j-row .nm{color:#0f172a}
+body.light .hero p,body.light .land .sub,body.light .card p,body.light .step-card p,body.light .school-box li,
+body.light .price-card li,body.light .modal-body,body.light .step,body.light .set-hint,body.light .title small,
+body.light .lesson-item .d,body.light .spr-card .nm,body.light .tb-label,body.light .rot-lbl,
+body.light .zoom-lbl,body.light .cos-title,body.light .cos-hint,body.light .lesson-detail .goal,
+body.light .bottom-bar .hint{color:#5c6b85}
+body.light .l-nav,body.light header,body.light .ed-bar,body.light .cos-bar,body.light .tabbar{
+background:#ffffffdd;border-color:#d9e2f0}
+body.light .l-foot{background:#e4ebf7;color:#5c6b85;border-color:#d9e2f0}
+body.light .l-foot .subs b,body.light .l-foot .bottom a{color:#334155}
+body.light #app,body.light #settingsPane{background:#eef3fb}
+body.light .tab.sel,body.light .ed-btn.sel{background:#e3ecfb;color:#1d4ed8;box-shadow:inset 0 0 0 1.5px #3b82f6}
+body.light .tab:hover,body.light .ed-btn:hover,body.light .emoji-grid button:hover,
+body.light .lesson-item:hover,body.light .spr-card.sel{background:#eaf1fc;color:#0f172a}
+body.light .icon-btn:hover,body.light .wall-btn:hover,body.light .theme-btn:hover{background:#eaf1fc;color:#1d4ed8}
+body.light .stage{background:#fff;border-color:#c7d5ea}
+body.light .stage.w-top{border-top-color:#2563eb}
+body.light .stage.w-bottom{border-bottom-color:#2563eb}
+body.light .stage.w-left{border-left-color:#2563eb}
+body.light .stage.w-right{border-right-color:#2563eb}
+body.light #edCanvas{background:linear-gradient(#93c5fd33 1px,transparent 1px) 0 0/24px 24px,
+linear-gradient(90deg,#93c5fd33 1px,transparent 1px) 0 0/24px 24px,#fff}
+body.light #edCanvas.pxmode{background:#fff}
+body.light .blocklyMainBackground{fill:#f5f8fe!important}
+body.light .blocklyToolboxDiv{background:#fff!important;border-right:1px solid #d9e2f0!important}
+body.light .blocklyTreeLabel{color:#0f172a!important}
+body.light .blocklyTreeSelected{background:#dbeafe!important}
+body.light .blocklyTreeRow:not(.blocklyTreeSelected):hover{background:#eef4ff!important}
+body.light .blocklyFlyoutBackground{fill:#eef3fb;fill-opacity:.98}
+body.light .blocklyScrollbarBackground{fill:#fff!important}
+body.light .blocklyZoom circle{fill:#fff!important;stroke:#c3d0e4!important}
+body.light .blocklyZoom path{fill:#5c6b85!important}
+body.light .modal{background:#64748b55}
+body.light .spr-add{background:#f4f8ff;color:#5c6b85}
+body.light .chip{background:#eaf1fc;color:#1d4ed8;border-color:#3b82f655}
+body.light .lv-1{background:#22c55e1a;color:#15803d;border-color:#22c55e55}
+body.light .lv-2{background:#f59e0b1a;color:#b45309;border-color:#f59e0b55}
+body.light .lv-3{background:#ef44441a;color:#b91c1c;border-color:#ef444455}
+@media(max-width:1000px){
+.cards,.steps,.pricing{grid-template-columns:1fr 1fr}
+.hero-art{width:220px;height:220px}.hero-cat{font-size:110px}
+.ext-grid{grid-template-columns:1fr}
+.bg-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:640px){ .cards,.steps,.pricing{grid-template-columns:1fr} .cb-options{grid-template-columns:1fr}
+.bg-grid{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body>
+<!-- ==================== ЛЕНДИНГ ==================== -->
+<div id="landing">
+<nav class="l-nav">
+<div class="l-logo"><div class="badge">🐱</div>КотКод</div>
+<div class="spacer"></div>
+<a class="nl" href="#about">Что это</a>
+<a class="nl" href="#how">Как пользоваться</a>
+<a class="nl" href="#school">Для школ</a>
+<a class="nl" href="#about-us">О нас</a>
+<div class="mini-theme">
+<button id="thDarkL" onclick="setTheme('dark')" title="Тёмная тема">🌙</button>
+<button id="thLightL" onclick="setTheme('light')" title="Светлая тема">☀️</button>
+</div>
+<button class="btn btn-ghost" onclick="openTeacher()">👩 Учителю</button>
+<button class="btn btn-primary" onclick="enterApp(false)">Попробовать</button>
+</nav>
+<section class="hero">
+<div class="hero-txt">
+<div class="hero-badge">🇷 Российская платформа программирования для детей</div>
+<h1><em>КотКод</em> — российский<br>аналог Scratch</h1>
+<p>Создавай игры, мультфильмы и истории из разноцветных блоков. Полностью на русском языке,
+прямо в браузере, без установки. Свои блоки, перо, музыка, списки и настройка границ сцены.</p>
+<div class="hero-btns">
+<button class="btn btn-primary btn-big btn-cta" onclick="enterApp(false)">🚀 Попробовать бесплатно</button>
+<a class="btn btn-ghost btn-big" href="#how">Как это работает?</a>
+</div>
+</div>
+<div class="hero-art">
+<div class="hero-cat">🐱</div>
+<div class="fchip c1">когда 🏁 нажат</div>
+<div class="fchip c2">повторить 10 раз</div>
+<div class="fchip c3">говорить Привет! 💬</div>
+</div>
+</section>
+<section class="land" id="about">
+<h2>Что такое КотКод?</h2>
+<div class="sub">Визуальная среда программирования, где программы собираются из блоков, как конструктор.
+Ребёнок видит результат сразу и учится через игру.</div>
+<div class="cards">
+<div class="card reveal"><div class="ic">🧩</div><h3>Блоки вместо кода</h3>
+<p>Программа собирается из разноцветных блоков. Никаких опечаток и ошибок синтаксиса — только логика.</p></div>
+<div class="card reveal"><div class="ic">🎨</div><h3>Редактор и перо</h3>
+<p>Рисуй персонажей кистью или пикселями, а блоками «Перо» рисуй прямо на сцене.</p></div>
+<div class="card reveal"><div class="ic">🇷</div><h3>Полностью на русском</h3>
+<p>Все блоки, уроки, клавиши и подсказки на русском языке. Не нужен английский и зарубежные сервисы.</p></div>
+<div class="card reveal"><div class="ic">💾</div><h3>Без установки</h3>
+<p>Работает в любом браузере. Проекты сохраняются в файл одним нажатием 💾.</p></div>
+</div>
+</section>
+<section class="land" id="how">
+<h2>Как пользоваться?</h2>
+<div class="sub">Три простых шага — и твой первый проект готов. А если что-то непонятно, интерактивные уроки всё покажут.</div>
+<div class="steps">
+<div class="step-card reveal"><div class="n">1</div><h3>Выбери героя</h3>
+<p>Возьми готового спрайта из коллекции или нарисуй своего — в обычном или пиксельном режиме.</p></div>
+<div class="step-card reveal"><div class="n">2</div><h3>Собери скрипт</h3>
+<p>Движение, звук, музыка, перо, циклы, списки, переменные, физика и свои блоки — всё как в Scratch.</p></div>
+<div class="step-card reveal"><div class="n">3</div><h3>Нажми 🏁</h3>
+<p>Запусти программу и смотри, как герой оживает! Делись проектом с друзьями файлом.</p></div>
+</div>
+<button class="btn btn-primary btn-big" onclick="enterApp(true)">📚 Пройти уроки</button>
+</section>
+<section class="land" id="school">
+<h2>КотКод для школ</h2>
+<div class="sub">Готовое решение для уроков информатики: от первых блоков в 3-м классе до подготовки к изучению Python.</div>
+<div class="school-wrap">
+<div class="school-box reveal">
+<h3>📦 Что мы предлагаем</h3>
+<ul>
+<li>Методические материалы и планы уроков по ФГОС</li>
+<li>12 интерактивных уроков с примерами прямо в среде</li>
+<li>Личный кабинет учителя: журнал класса и методички</li>
+<li>Работает на школьных компьютерах — нужен только браузер</li>
+<li>Сохранение проектов учеников в файлы для проверки учителем</li>
+</ul>
+</div>
+<div class="school-box reveal">
+<h3>📈 Как это улучшит уроки</h3>
+<ul>
+<li>Вовлечённость: дети видят результат своей программы сразу</li>
+<li>Проектная деятельность: игры и мультфильмы вместо скучных задач</li>
+<li>Развитие алгоритмического мышления с 1-го урока</li>
+<li>Плавный переход к текстовому программированию (Python)</li>
+<li>Никаких блокировок и зарубежных сервисов — всё работает локально</li>
+</ul>
+</div>
+</div>
+<div class="pricing">
+<div class="price-card reveal">
+<h3>Личный</h3><div class="price">0 ₽</div><div class="per">навсегда</div>
+<ul><li>Все блоки и возможности</li><li>Редактор спрайтов</li><li>Все 12 уроков</li><li>Для дома</li></ul>
+<button class="btn btn-ghost" onclick="enterApp(false)">Начать бесплатно</button>
+</div>
+<div class="price-card hot reveal">
+<div class="tag">Популярный</div>
+<h3>Класс</h3><div class="price">1 990 ₽</div><div class="per">за класс в год · до 30 учеников</div>
+<ul><li>Всё из «Личного»</li><li>Методички и планы уроков</li><li>Задания с примерами</li><li>Поддержка по мессенджеру (ИИ)</li></ul>
+<a class="btn btn-primary" href="mailto:m4xim.dym@yandex.ru">Связаться</a>
+</div>
+<div class="price-card reveal">
+<h3>Школа</h3><div class="price">14 990 ₽</div><div class="per">за школу в год · без ограничений</div>
+<ul><li>Всё из «Класса»</li><li>Обучение учителей</li><li>Персональный методист</li><li>Приоритетная поддержка (ИИ)</li></ul>
+<a class="btn btn-ghost" href="mailto:m4xim.dym@yandex.ru">Связаться</a>
+</div>
+</div>
+<a class="btn btn-primary btn-big" href="mailto:m4xim.dym@yandex.ru">✉️ Связаться с нами</a>
+</section>
+<section class="land" id="about-us">
+<h2>О нас</h2>
+<div class="sub">Я — обычный школьник из России. Я верю, что каждый ребёнок
+может создавать свои миры с помощью кода — на родном языке и без барьеров.</div>
+<div class="cards">
+<div class="card reveal"><div class="ic">🇷🇺</div><h3>Сделано в России</h3>
+<p>Платформа не зависит от зарубежных сервисов и работает даже без стабильного интернета.</p></div>
+<div class="card reveal"><div class="ic">❤️</div><h3>С любовью к детям</h3>
+<p>Интерфейс придуман так, чтобы ребёнок 7 лет разобрался сам за пять минут.</p></div>
+<div class="card reveal"><div class="ic">🎓</div><h3>По науке</h3>
+<p>Методика основана на программах школьной информатики и опыте кружков программирования.</p></div>
+<div class="card reveal"><div class="ic">🚀</div><h3>Развиваемся</h3>
+<p>Каждый месяц добавляем новые блоки, уроки и возможности по запросам учителей и детей.</p></div>
+</div>
+<div class="stats">
+<div class="stat reveal"><b data-n="12">0</b><span>интерактивных уроков</span></div>
+<div class="stat reveal"><b data-n="150">0</b><span>блоков программирования</span></div>
+<div class="stat reveal"><b data-n="56">0</b><span>готовых спрайтов</span></div>
+<div class="stat reveal"><b data-n="12">0</b><span>фонов для сцены</span></div>
+</div>
+</section>
+<footer class="l-foot">
+<div class="subs">
+<b>Подписывайся на КотКод:</b>
+<a class="soc" href="https://max.ru/join/uWSsaE28N23UX5pGrkazvazLvWRVVBMDwW9pnX0WaEE" target="_blank" rel="noopener">🟣 MAX</a>
+<a class="soc" href="https://t.me/kotkod1" target="_blank" rel="noopener">🔵 Telegram</a>
+</div>
+<div class="bottom">
+<span>© 2025 КотКод · Российский аналог Scratch</span>
+<a onclick="privacyModal.classList.add('open')">Политика конфиденциальности</a>
+</div>
+</footer>
+</div>
+<!-- ==================== ПРИЛОЖЕНИЕ ==================== -->
+<div id="app">
+<header>
+<div class="logo">🐱</div>
+<div class="title">КотКод<small>визуальное программирование для детей</small></div>
+<div class="proj-chip" id="projChip" onclick="renameProject()" title="Нажми, чтобы переименовать проект">📄 Мой проект</div>
+<div class="spacer"></div>
+<div class="mini-theme">
+<button id="thDarkA" onclick="setTheme('dark')" title="Тёмная тема">🌙</button>
+<button id="thLightA" onclick="setTheme('light')" title="Светлая тема">☀️</button>
+</div>
+<button class="btn btn-ghost btn-icon" onclick="goHome()" title="На главную">🏠</button>
+<button class="btn btn-primary" onclick="openLessons()">📚 Уроки</button>
+<button class="btn btn-ghost btn-icon" onclick="saveProject()" title="Сохранить проект">💾</button>
+<button class="btn btn-ghost" onclick="fileProject.click()" title="Открыть проект">📂 Открыть</button>
+<button class="btn btn-ghost" onclick="newProject()" title="Новый проект">✨ Новый</button>
+</header>
+<main>
+<section class="panel code-panel">
+<div class="tabbar">
+<button class="tab sel" id="tabCode" onclick="switchTab('code')">💻 Код</button>
+<button class="tab" id="tabDraw" onclick="switchTab('draw')">🎨 Спрайты</button>
+<button class="tab" id="tabSettings" onclick="switchTab('settings')">⚙️ Настройки</button>
+<span class="ed-name" id="edName"></span>
+</div>
+<div id="wsWrap">
+<div id="blocklyDiv"></div>
+<button id="extBtn" title="Дополнения: Перо и Музыка" onclick="openExtModal()">✳️</button>
+</div>
+<div id="editor">
+<div class="ed-bar">
+<div class="ed-group">
+<button class="ed-btn mode sel" data-mode="normal">🖌️ Обычный</button>
+<button class="ed-btn mode" data-mode="pixel">🟩 Пиксельный</button>
+<select id="pxSize" title="Размер сетки" style="display:none">
+<option value="16">16×16</option><option value="24" selected>24×24</option>
+<option value="32">32×32</option>
+</select>
+</div>
+<div class="ed-group" id="toolGroup">
+<button class="ed-btn tool sel" data-tool="brush" title="Кисть">🖌️</button>
+<button class="ed-btn tool" data-tool="eraser" title="Ластик">🧼</button>
+<button class="ed-btn tool" data-tool="fill" title="Заливка">🪣</button>
+<button class="ed-btn tool" data-tool="picker" title="Пипетка">💉</button>
+<button class="ed-btn tool shape-only" data-tool="line" title="Линия">📏</button>
+<button class="ed-btn tool shape-only" data-tool="rect" title="Прямоугольник">⬜</button>
+<button class="ed-btn tool shape-only" data-tool="ellipse" title="Овал">⭕</button>
+</div>
+<div class="ed-group" id="swatches"></div>
+<div class="ed-group"><input type="color" id="edColor" value="#7c3aed" title="Свой цвет"></div>
+<div class="ed-group" id="sizeGroup"><input type="range" id="edSize" min="2" max="40" value="8" title="Толщина кисти"></div>
+<div class="ed-group">
+<button class="ed-btn" onclick="setEdZoom(ed.zoom/1.25)" title="Уменьшить (или Ctrl+колесо)">➖</button>
+<span class="zoom-lbl" id="edZoomLbl">100%</span>
+<button class="ed-btn" onclick="setEdZoom(ed.zoom*1.25)" title="Увеличить (или Ctrl+колесо)">➕</button>
+<button class="ed-btn" onclick="setEdZoom(1)" title="Масштаб 100%">⤾</button>
+</div>
+<div class="ed-group">
+<button class="ed-btn" onclick="edUndo()" title="Отменить (Ctrl+Z)">↩️</button>
+<button class="ed-btn" onclick="edClear()" title="Очистить">🗑️</button>
+</div>
+<div class="spacer"></div>
+<div class="ed-group">
+<button class="ed-btn" onclick="fileEdImg.click()">📁 Загрузить картинку</button>
+<button class="ed-btn" style="color:var(--grn)" onclick="applyToSprite(false)">✅ Применить</button>
+<button class="ed-btn" style="color:var(--vio)" onclick="applyToSprite(false,true)">🎭 В новый костюм</button>
+<button class="ed-btn" id="applyBgBtn" style="display:none;color:var(--amb)" onclick="applyToBg()">🌄 Применить как фон</button>
+</div>
+</div>
+<div class="cos-bar">
+<span class="cos-title">🎭 Костюмы</span>
+<div id="costumeList"></div>
+<button class="ed-btn" onclick="openSpriteModal('costume')" title="Добавить костюм">➕</button>
+<button class="ed-btn" onclick="renameCostume(current?current.costumeIndex:0)" title="Переименовать выбранный костюм">✏️</button>
+<span class="cos-hint">двойной клик по костюму — переименовать</span>
+</div>
+<div class="ed-wrap"><canvas id="edCanvas" width="480" height="360"></canvas></div>
+</div>
+<!-- ===== ВКЛАДКА НАСТРОЙКИ ===== -->
+<div id="settingsPane">
+<div class="set-sec">
+<h4>🧱 Границы сцены</h4>
+<p class="set-hint">Выбери, с каких сторон спрайты не могут вылететь за сцену. Включённые стороны
+подсвечиваются синей рамкой. По умолчанию границы стоят <b>везде</b>.</p>
+<div class="wall-grid">
+<button class="wall-btn" data-wall="top">⬆️ Сверху</button>
+<button class="wall-btn" data-wall="bottom">⬇️ Снизу</button>
+<button class="wall-btn" data-wall="left">⬅️ Слева</button>
+<button class="wall-btn" data-wall="right">➡️ Справа</button>
+</div>
+<div class="wall-presets">
+<button class="btn btn-ghost" onclick="setWalls('all')">🧱 Везде</button>
+<button class="btn btn-ghost" onclick="setWalls('none')">🕳️ Без границ</button>
+<button class="btn btn-ghost" onclick="setWalls('leftright')">↔ Только слева и справа</button>
+<button class="btn btn-ghost" onclick="setWalls('topbottom')">↕ Только сверху и снизу</button>
+</div>
+</div>
+<div class="set-sec">
+<h4>🎨 Тема оформления</h4>
+<p class="set-hint">Мини-кнопки переключения тёмной и светлой темы. Выбор запоминается.</p>
+<div class="theme-mini">
+<button class="theme-btn" data-theme="dark" onclick="setTheme('dark')">🌙 Тёмная</button>
+<button class="theme-btn" data-theme="light" onclick="setTheme('light')">☀️ Светлая</button>
+</div>
+</div>
+<div class="set-sec">
+<h4>🔊 Звук и ✏️ перо</h4>
+<div class="set-row">
+<label>Общая громкость: <b id="volLbl">100%</b></label>
+<input type="range" id="setVol" min="0" max="100" value="100" style="accent-color:var(--vio)"
+oninput="globalVolume=+this.value;$('volLbl').textContent=this.value+'%'">
+</div>
+<div class="set-row">
+<label>Музыкальный темп (уд/мин):</label>
+<input class="t-input" id="setTempo" type="number" min="20" max="300" value="60" style="width:110px"
+onchange="music.tempo=Math.max(20,Math.min(300,+this.value||60))">
+</div>
+<div class="set-row">
+<button class="btn btn-ghost" onclick="clearPen();toast('Рисунок пера стёрт 🧽')">🧽 Стереть рисунок пера</button>
+<button class="btn btn-ghost" onclick="stopEverything()">⏹ Остановить проект</button>
+</div>
+</div>
+<div class="set-sec">
+<h4>ℹ️ Подсказки</h4>
+<p class="set-hint">
+• Направление спрайта: поле «напр. °» и выбор поворота ⟳ вокруг / ↔ влево-вправо / ⊘ не поворачивать — под сценой.<br>
+• Кнопка ✳️ в самом низу палитры открывает дополнения «Перо» и «Музыка» (окно во весь экран).<br>
+• Фон и добавление музыки — внизу правой панели: кнопка «🌄 Фон» открывает выбор: готовый, свой файл или нарисованный.<br>
+• Стирание пера — блок «✏️ стереть всё нарисованное» в дополнении «Перо».<br>
+• Категория «🧩 Другие блоки» — кнопка «Создать блок»: делай собственные блоки со значениями и подписями.<br>
+• Уроки разбиты по уровням: 🌱 Новичок → 🌿 Средний → 🌳 Про. Внутри — шаги, плашки тем и задание.<br>
+• Границы сцены учитываются в «если на краю — оттолкнуться», «касается края?» и в физике.</p>
+</div>
+</div>
+</section>
+<aside class="right-col">
+<div class="panel stage-panel" id="stagePanel">
+<div class="stage-toolbar">
+<button class="flag-btn" id="flagBtn" title="Запустить" onclick="runProject()">
+<svg viewBox="0 0 24 24"><path d="M6 21.5V3.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none"/><path d="M6 4h12.2l-2.6 3.6 2.6 3.6H6z" fill="#fff"/></svg>
+</button>
+<button class="stop-btn" title="Стоп" onclick="stopEverything()">
+<svg viewBox="0 0 24 24"><rect x="5.5" y="5.5" width="13" height="13" rx="3" fill="#fff"/></svg>
+</button>
+<div class="spacer"></div>
+<button class="icon-btn" id="fsBtn" title="На весь экран" onclick="toggleFullscreen()">⛶</button>
+</div>
+<div class="stage-wrap" id="stageWrap">
+<div class="stage w-top w-bottom w-left w-right" id="stage">
+<canvas id="penLayer" width="480" height="360"></canvas>
+<div id="varLayer"></div>
+<div id="spriteLayer"></div>
+<div id="coordChip">x: 0 y: 0</div>
+</div>
+</div>
+<div class="props">
+<label>x<input type="number" id="propX"></label>
+<label>y<input type="number" id="propY"></label>
+<label>размер %<input type="number" id="propSize" min="5" step="5"></label>
+<label>напр. °<input type="number" id="propDir" step="15"></label>
+<div class="rot-group" title="Выбор направления (стиль поворота)">
+<span class="rot-lbl">напр.</span>
+<button class="rot-btn" data-rot="all" title="Вращаться вокруг">⟳</button>
+<button class="rot-btn" data-rot="leftright" title="Только влево-вправо (зеркально)">↔</button>
+<button class="rot-btn" data-rot="none" title="Не поворачиваться">⊘</button>
+</div>
+</div>
+</div>
+<div class="panel sprite-panel">
+<div class="head">
+<h3>🎭 Спрайты</h3>
+<div class="spacer"></div>
+<button class="btn btn-ghost" style="padding:6px 12px;font-size:13px" onclick="renameSprite(current)" title="Переименовать спрайта (или двойной клик по карточке)">✏️</button>
+<button class="btn btn-ghost" style="padding:6px 12px;font-size:13px" onclick="openSpriteModal('sprite')">➕ Добавить</button>
+</div>
+<div id="spriteList"></div>
+</div>
+<!-- ===== НИЖНЯЯ ПАНЕЛЬ: ФОН + МУЗЫКА ===== -->
+<div class="panel bottom-bar">
+<button class="btn btn-ghost" onclick="openBgModal()" title="Выбрать готовый фон, загрузить свой или нарисовать">🌄 Фон: <span id="bgName">☁️ Небо</span></button>
+<button class="btn btn-ghost" onclick="fileSound.click()" title="Загрузить музыку/звук">🎵 Добавить звук</button>
+<div class="spacer"></div>
+<span class="hint">фон и музыка теперь здесь ↓</span>
+</div>
+</aside>
+</main>
+</div>
+<!-- ==================== МОДАЛКИ ==================== -->
+<div class="modal" id="lessonModal">
+<div class="modal-card" style="height:84vh">
+<div class="modal-head"><h2>📚 Уроки программирования</h2>
+<button class="close-x" onclick="lessonModal.classList.remove('open')">✕</button></div>
+<div class="lesson-body">
+<div class="lesson-list" id="lessonList"></div>
+<div class="lesson-detail" id="lessonDetail"></div>
+</div>
+</div>
+</div>
+<div class="modal" id="spriteModal">
+<div class="modal-card" style="width:620px">
+<div class="modal-head"><h2 id="spriteModalTitle">🎭 Выбери спрайта</h2>
+<button class="close-x" onclick="spriteModal.classList.remove('open')">✕</button></div>
+<div class="emoji-grid" id="emojiGrid"></div>
+<div class="modal-foot">
+<button class="btn btn-primary" onclick="fileSprite.click()">📁 Загрузить изображение</button>
+<button class="btn btn-ghost" onclick="drawNewSprite()">✏️ Нарисовать новый</button>
+<span style="font-size:12px;color:var(--mut)">или выбери из коллекции выше</span>
+</div>
+</div>
+</div>
+<!-- ===== ВЫБОР ФОНА (единое окно) ===== -->
+<div class="modal" id="bgModal">
+<div class="modal-card" style="width:760px">
+<div class="modal-head"><h2>🌄 Выбери фон</h2>
+<button class="close-x" onclick="bgModal.classList.remove('open')">✕</button></div>
+<div class="bg-grid" id="bgGrid"></div>
+<div class="modal-foot">
+<button class="btn btn-primary" onclick="fileBg.click()">📁 Загрузить изображение</button>
+<button class="btn btn-ghost" onclick="drawNewBg()">✏️ Нарисовать свой</button>
+<span style="font-size:12px;color:var(--mut)">или выбери готовый фон выше</span>
+</div>
+</div>
+</div>
+<div class="modal" id="promptModal">
+<div class="modal-card" style="width:430px">
+<div class="modal-head"><h2 id="promptTitle">✏️ Новое имя</h2>
+<button class="close-x" onclick="closePrompt(false)">✕</button></div>
+<div class="modal-body" style="padding:18px 22px">
+<p id="promptMsg" style="margin-bottom:12px;color:#cbd5e1"></p>
+<input id="promptInput" class="t-input" style="width:100%;text-align:left" placeholder="Введи значение…"
+onkeydown="if(event.key==='Enter')closePrompt(true);else if(event.key==='Escape')closePrompt(false)">
+</div>
+<div class="modal-foot">
+<button class="btn btn-primary" onclick="closePrompt(true)">✅ Готово</button>
+<button class="btn btn-ghost" onclick="closePrompt(false)">Отмена</button>
+</div>
+</div>
+</div>
+<!-- ===== СОЗДАТЬ БЛОК ===== -->
+<div class="modal" id="cbModal">
+<div class="modal-card" style="width:780px">
+<div class="modal-head"><h2>Создать блок</h2>
+<button class="close-x" onclick="cbModal.classList.remove('open')">✕</button></div>
+<div class="cb-stage">
+<button class="cb-trash" onclick="cbRemoveLast()" title="Убрать последний добавленный элемент">🗑️</button>
+<div class="cb-block" id="cbPreview"></div>
+</div>
+<div class="cb-options">
+<button class="cb-card" onclick="cbAddPart('val')"><span class="cb-ic round"></span>
+<b>Добавить значение</b><span>число или текст</span></button>
+<button class="cb-card" onclick="cbAddPart('bool')"><span class="cb-ic hex"></span>
+<b>Добавить значение</b><span>логическое</span></button>
+<button class="cb-card" onclick="cbAddPart('label')"><span class="cb-ic lbl">text</span>
+<b>Добавить подпись</b><span>слово без отверстия</span></button>
+</div>
+<div class="cb-foot">
+<label class="cb-check"><input type="checkbox" id="cbNoRefresh" onchange="cbDraft.noRefresh=this.checked">
+Запустить без обновления экрана</label>
+<div class="spacer"></div>
+<button class="btn btn-ghost" style="background:#fff;color:#5f6b7e;border-color:#d7dce6" onclick="cbModal.classList.remove('open')">Отменить</button>
+<button class="btn btn-primary" style="background:#9068d6;box-shadow:none" onclick="cbCreate()">ОК</button>
+</div>
+</div>
+</div>
+<!-- ===== ДОПОЛНЕНИЯ (ВО ВЕСЬ ЭКРАН) ===== -->
+<div class="modal" id="extModal">
+<div class="modal-card">
+<div class="modal-head"><h2>✳️ Дополнения</h2>
+<button class="close-x" onclick="extModal.classList.remove('open')">✕</button></div>
+<div class="ext-grid">
+<button class="ext-card" id="extCardMusic" onclick="enableExt('music')">
+<div class="ext-art music">🎹</div>
+<div class="ext-badge">♫</div>
+<div class="ext-body"><h4>Музыка</h4><p>Играть на инструментах и барабанах.</p></div>
+</button>
+<button class="ext-card" id="extCardPen" onclick="enableExt('pen')">
+<div class="ext-art pen"><span>🖊️</span></div>
+<div class="ext-badge">🖊️</div>
+<div class="ext-body"><h4>Перо</h4><p>Рисуй своими спрайтами.</p></div>
+</button>
+</div>
+<div class="modal-foot"><span style="font-size:12.5px;color:var(--mut)">
+Нажми на карточку — и категория с блоками появится в самом низу палитры (отдельно, через разделитель).</span></div>
+</div>
+</div>
+<div class="modal" id="teacherModal">
+<div class="modal-card" style="width:600px">
+<div class="modal-head"><h2>👩 Личный кабинет учителя</h2>
+<button class="close-x" onclick="teacherModal.classList.remove('open')">✕</button></div>
+<div id="teacherLogin" class="modal-body" style="text-align:center">
+<div style="font-size:52px;margin-bottom:10px">🔐</div>
+<p style="margin-bottom:16px">Введите пароль учителя, чтобы открыть журнал класса<br>и методические материалы.</p>
+<input id="teacherPass" type="password" class="t-input" placeholder="Пароль"
+onkeydown="if(event.key==='Enter')teacherDoLogin()"><br><br>
+<button class="btn btn-primary btn-big" onclick="teacherDoLogin()">Войти</button>
+<p id="teacherErr" style="color:var(--red);font-size:13px;margin-top:12px;display:none">Неверный пароль 😿</p>
+</div>
+<div id="teacherDash" class="modal-body" style="display:none">
+<div class="t-sec">
+<h4>📊 Журнал класса</h4>
+<div id="journalList"></div>
+<div style="display:flex;gap:8px;margin-top:10px">
+<input id="jName" class="t-input" style="width:auto;flex:1;text-align:left" placeholder="Имя ученика">
+<button class="btn btn-primary" onclick="jAdd()">➕ Добавить</button>
+</div>
+</div>
+<div class="t-sec">
+<h4>📚 Методические материалы</h4>
+<div id="planList"></div>
+</div>
+<div style="text-align:right"><button class="btn btn-ghost" onclick="teacherLogout()">🚪 Выйти</button></div>
+</div>
+</div>
+</div>
+<div class="modal" id="privacyModal">
+<div class="modal-card" style="width:640px">
+<div class="modal-head"><h2>🔒 Политика конфиденциальности</h2>
+<button class="close-x" onclick="privacyModal.classList.remove('open')">✕</button></div>
+<div class="modal-body">
+<h4>1. Какие данные мы собираем</h4>
+<p>КотКод не собирает персональные данные. Все проекты, рисунки и звуки хранятся только
+в вашем браузере и в сохраняемых вами файлах проекта.</p>
+<h4>2. Файлы пользователя</h4>
+<p>Изображения и музыка, которые вы загружаете, не покидают ваше устройство и никуда не отправляются.</p>
+<h4>3. Cookies и аналитика</h4>
+<p>Мы не используем cookies и сторонние сервисы аналитики.</p>
+<h4>4. Для школ</h4>
+<p>При подключении школы мы обрабатываем только контактные данные учреждения, указанные при обращении.</p>
+<h4>5. Контакты</h4>
+<p>По вопросам конфиденциальности: m4xim.dym@yandex.ru</p>
+</div>
+</div>
+</div>
+<input type="file" id="fileSprite" accept="image/*" hidden>
+<input type="file" id="fileSound" accept="audio/*" hidden>
+<input type="file" id="fileBg" accept="image/*" hidden>
+<input type="file" id="fileProject" accept=".json" hidden>
+<input type="file" id="fileEdImg" accept="image/*" hidden>
+<div id="toast"></div>
+<script>
+/* ===== РУСИФИКАЦИЯ Blockly ===== */
+Object.assign(Blockly.Msg,{
+VARIABLES_DEFAULT_NAME:'переменная',
+RENAME_VARIABLE:'Переименовать переменную…',
+DELETE_VARIABLE:'Удалить переменную «%1»',
+DELETE_ALL_VARIABLES:'Удалить все переменные «%1»',
+NEW_VARIABLE_TITLE:'Имя новой переменной:',
+NEW_VARIABLE_TYPE_PROMPT:'Имя новой переменной:',
+RENAME_VARIABLE_TITLE:'Переименовать переменную «%1» в:',
+VARIABLE_ALREADY_EXISTS:'Переменная «%1» уже существует.',
+VARIABLE_ALREADY_EXISTS_FOR_ANOTHER_TYPE:'Переменная «%1» уже существует для другого типа.',
+DELETE_VARIABLE_CONFIRMATION:'Удалить %1 использований переменной «%2»?',
+CANNOT_DELETE_VARIABLE_PROCEDURE:'Нельзя удалить переменную «%1», она часть функции «%2»',
+CHANGE_VALUE_TITLE:'Изменить значение:',
+COLLAPSE_ALL:'Свернуть блоки', EXPAND_ALL:'Развернуть блоки',
+DELETE_BLOCK:'Удалить блок', DELETE_X_BLOCKS:'Удалить %1 блоков',
+DISABLE_BLOCK:'Отключить блок', ENABLE_BLOCK:'Включить блок',
+HELP:'Справка', UNDO:'Отменить', REDO:'Повторить',
+CLEAN_UP:'Убрать блоки',
+ADD_COMMENT:'Добавить комментарий', REMOVE_COMMENT:'Удалить комментарий',
+DUPLICATE_BLOCK:'Дублировать', TODAY:'Сегодня',
+NEW_VARIABLE:'Создать переменную…',
+PROCEDURE_ALREADY_EXISTS:'Процедура «%1» уже существует.'
+});
+/* ===== ОКНО ВВОДА ===== */
+let promptCb=null;
+function openCustomPrompt(msg,def,cb,title){ promptCb=cb;
+$('promptTitle').textContent=title||'✏️ Новое имя';
+$('promptMsg').textContent=msg||'';
+$('promptInput').value=def||'';
+$('promptInput').placeholder=title==='💬 Вопрос'?'Твой ответ…':'Введи значение…';
+promptModal.classList.add('open');
+setTimeout(()=>{ const i=$('promptInput'); i.focus(); i.select(); },60); }
+function closePrompt(ok){ if(!promptModal.classList.contains('open'))return;
+promptModal.classList.remove('open');
+const cb=promptCb; promptCb=null;
+if(cb) cb(ok? $('promptInput').value : null); }
+function askValue(msg,def,title){ return new Promise(res=>openCustomPrompt(msg,def,v=>res(v),title)); }
+if(Blockly.dialog&&Blockly.dialog.setPrompt)
+Blockly.dialog.setPrompt((msg,def,cb)=>openCustomPrompt(msg,def,cb,'✏️ Переменная'));
+/* ===== ТЕМА ===== */
+let curTheme=localStorage.getItem('kotkod_theme')||'dark';
+function setTheme(th){ curTheme=th==='light'?'light':'dark';
+document.body.classList.toggle('light',curTheme==='light');
+localStorage.setItem('kotkod_theme',curTheme);
+document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('sel',b.dataset.theme===curTheme));
+['thDarkA','thDarkL'].forEach(id=>{const e=$(id); if(e)e.classList.toggle('sel',curTheme==='dark');});
+['thLightA','thLightL'].forEach(id=>{const e=$(id); if(e)e.classList.toggle('sel',curTheme==='light');}); }
+/* ===== ЛЕНДИНГ / ВХОД ===== */
+let booted=false;
+function enterApp(withLessons){
+$('landing').style.display='none';
+$('app').style.display='flex';
+if(!booted){ booted=true; bootWorkspace(); initProject(); }
+Blockly.svgResize(workspace); sizeExtBtn();
+if(withLessons) openLessons(); }
+function goHome(){ stopEverything(); $('app').style.display='none';
+$('landing').style.display=''; window.scrollTo(0,0); }
+const io=new IntersectionObserver(es=>es.forEach(x=>{
+if(x.isIntersecting){ x.target.classList.add('vis'); io.unobserve(x.target);
+const b=x.target.querySelector('b[data-n]');
+if(b) countUp(b); } }),{threshold:.15});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+function countUp(el){ const n=+el.dataset.n, t0=performance.now();
+const tick=t=>{ const p=Math.min(1,(t-t0)/900);
+el.textContent=Math.round(n*(1-Math.pow(1-p,3)));
+if(p<1)requestAnimationFrame(tick); };
+requestAnimationFrame(tick); }
+/* ===== КАБИНЕТ УЧИТЕЛЯ ===== */
+const TEACHER_PASS='QAZWSXEDC';
+let teacherAuthed=false;
+let journal=JSON.parse(localStorage.getItem('kotkod_journal')||'[]');
+function openTeacher(){ teacherModal.classList.add('open');
+$('teacherLogin').style.display=teacherAuthed?'none':'';
+$('teacherDash').style.display=teacherAuthed?'':'none';
+if(teacherAuthed) renderTeacher(); }
+function teacherDoLogin(){
+if($('teacherPass').value===TEACHER_PASS){ teacherAuthed=true;
+$('teacherPass').value=''; $('teacherErr').style.display='none';
+openTeacher(); toast('Добро пожаловать, учитель! 👩'); }
+else { $('teacherErr').style.display='';
+const c=$('teacherLogin'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); } }
+function teacherLogout(){ teacherAuthed=false; openTeacher(); }
+function renderTeacher(){
+$('journalList').innerHTML=journal.length?journal.map((s,i)=>
+'<div class="j-row"><span class="nm">'+(i+1)+'. '+s.n+'</span>'+
+'<select onchange="jGrade('+i+',this.value)">'+
+[5,4,3,2].map(g=>'<option '+(s.g==g?'selected':'')+'>'+g+'</option>').join('')+
+'</select><button class="close-x" style="width:26px;height:26px" onclick="jDel('+i+')">✕</button></div>').join('')
+:'<p style="font-size:13px;color:var(--mut)">Пока пусто — добавьте учеников.</p>';
+$('planList').innerHTML=LESSONS.map((l,i)=>
+'<div class="j-row"><span class="nm">'+l.em+' Урок '+(i+1)+'. '+l.title+'</span>'+
+'<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="downloadPlan('+i+')">📥 План урока</button></div>').join(''); }
+function jAdd(){ const n=$('jName').value.trim(); if(!n)return;
+journal.push({n,g:5}); $('jName').value=''; saveJournal(); }
+function jDel(i){ journal.splice(i,1); saveJournal(); }
+function jGrade(i,g){ journal[i].g=+g; saveJournal(); }
+function saveJournal(){ localStorage.setItem('kotkod_journal',JSON.stringify(journal)); renderTeacher(); }
+function downloadPlan(i){ const l=LESSONS[i];
+const steps=l.steps.map((s,j)=>(j+1)+'. '+s.replace(/<[^>]+>/g,'')).join('\n');
+const txt="КОТКОД — ПЛАН УРОКА "+(i+1)+": "+l.title+"\n"+
+"Уровень: "+['','новичок','средний','про'][l.level]+"\n"+
+"Цель: "+l.goal+"\n"+
+"Ход урока:\n"+steps+"\n"+
+"Задание: "+(l.task||'').replace(/<[^>]+>/g,'')+"\n"+
+"Платформа: КотКод — российский аналог Scratch";
+const a=document.createElement('a');
+a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+a.download='kotkod-урок-'+(i+1)+'.txt'; a.click(); toast('План урока скачан 📥'); }
+/* ===== ВСЯ КЛАВИАТУРА ===== */
+function keyOptions(){
+const o=[['пробел','space'],['стрелка ↑','arrowup'],['стрелка ↓','arrowdown'],
+['стрелка ←','arrowleft'],['стрелка →','arrowright'],['любая','any'],
+['enter','enter'],['tab','tab'],['shift','shift'],['ctrl','ctrl'],['alt','alt'],
+['backspace','backspace'],['delete','delete'],['esc','escape']];
+for(let d=0;d<=9;d++) o.push([String(d),String(d)]);
+for(const ch of 'abcdefghijklmnopqrstuvwxyz') o.push([ch,ch]);
+for(const ch of 'абвгдежзийклмнопрстуфхцчшщъыьэюяё') o.push([ch,ch]);
+for(let f=1;f<=12;f++) o.push(['F'+f,'f'+f]);
+return o; }
+/* ===== БЛОКИ ===== */
+Blockly.defineBlocksWithJsonArray([
+{type:'ev_flag',message0:'когда 🏁 нажат',nextStatement:null,colour:'#f59e0b'},
+{type:'ev_click',message0:'когда спрайт нажат',nextStatement:null,colour:'#f59e0b'},
+{type:'ev_key',message0:'когда клавиша %1 нажата',nextStatement:null,colour:'#f59e0b',
+args0:[{type:'field_dropdown',name:'KEY',options:keyOptions}]},
+{type:'ev_broadcast',message0:'когда я получу %1',nextStatement:null,colour:'#f59e0b',
+args0:[{type:'field_input',name:'MSG',text:'сообщение1'}]},
+{type:'broadcast',message0:'отправить %1 всем',previousStatement:null,nextStatement:null,colour:'#f59e0b',
+args0:[{type:'field_input',name:'MSG',text:'сообщение1'}]},
+{type:'broadcast_wait',message0:'отправить %1 всем и ждать',previousStatement:null,nextStatement:null,colour:'#f59e0b',
+args0:[{type:'field_input',name:'MSG',text:'сообщение1'}]},
+{type:'move_steps',message0:'идти %1 шагов',previousStatement:null,nextStatement:null,colour:'#3b82f6',
+args0:[{type:'input_value',name:'STEPS',check:'Number'}]},
+{type:'turn_r',message0:'повернуть ↻ на %1 градусов',previousStatement:null,nextStatement:null,colour:'#3b82f6',
+args0:[{type:'input_value',name:'DEGREES',check:'Number'}]},
+{type:'turn_l',message0:'повернуть ↺ на %1 градусов',previousStatement:null,nextStatement:null,colour:'#3b82f6',
+args0:[{type:'input_value',name:'DEGREES',check:'Number'}]},
+{type:'point_towards_mouse',message0:'повернуться к указателю мыши',previousStatement:null,nextStatement:null,colour:'#3b82f6'},
+{type:'goto_xy',message0:'перейти в x %1 y %2',previousStatement:null,nextStatement:null,colour:'#3b82f6',
+args0:[{type:'input_value',name:'X',check:'Number'},{type:'input_value',name:'Y',check:'Number'}]},
+{type:'goto_random',message0:'перейти в случайное положение',previousStatement:null,nextStatement:null,colour:'#3b82f6'},
+{type:'goto_mouse',message0:'перейти к указателю мыши',previousStatement:null,nextStatement:null,colour:'#3b82f6'},
+{type:'glide',message0:'плыть %1 сек в x %2 y %3',previousStatement:null,nextStatement:null,colour:'#3b82f6',
+args0:[{type:'input_value',name:'SECS',check:'Number'},{type:'input_value',name:'X',check:'Number'},
+{type:'input_value',name:'Y',check:'Number'}]},
+{type:'glide_mouse',message0:'плыть %1 сек к указателю мыши',previousStatement:null,nextStatement:null,colour:'#3b82f6',
+args0:[{type:'input_value',name:'SECS',check:'Number'}]},
+{type:'point_dir',message0:'повернуться в направлении %1',previousStatement:null,nextStatement:null,colour:'#3b82f6',
+args0:[{type:'input_value',name:'DIR',check:'Number'}]},
+{type:'change_x',message0:'изменить x на %1',previousStatement:null,nextStatement:null,colour:'#3b82f6',
+args0:[{type:'input_value',name:'DX',check:'Number'}]},
+{type:'change_y',message0:'изменить y на %1',previousStatement:null,nextStatement:null,colour:'#3b82f6',
+args0:[{type:'input_value',name:'DY',check:'Number'}]},
+{type:'set_x',message0:'задать x %1',previousStatement:null,nextStatement:null,colour:'#3b82f6',
+args0:[{type:'input_value',name:'X',check:'Number'}]},
+{type:'set_y',message0:'задать y %1',previousStatement:null,nextStatement:null,colour:'#3b82f6',
+args0:[{type:'input_value',name:'Y',check:'Number'}]},
+{type:'bounce',message0:'если на краю — оттолкнуться',previousStatement:null,nextStatement:null,colour:'#3b82f6'},
+{type:'set_walls',message0:'поставить границы %1',previousStatement:null,nextStatement:null,colour:'#3b82f6',
+args0:[{type:'field_dropdown',name:'MODE',options:[['везде','all'],['без границ','none'],['только слева и справа','leftright'],['только сверху и снизу','topbottom']]}]},
+{type:'x_pos',message0:'x положение',output:'Number',colour:'#3b82f6'},
+{type:'y_pos',message0:'y положение',output:'Number',colour:'#3b82f6'},
+{type:'direction',message0:'направление',output:'Number',colour:'#3b82f6'},
+{type:'say_for',message0:'говорить %1 %2 секунд',previousStatement:null,nextStatement:null,colour:'#8b5cf6',
+args0:[{type:'input_value',name:'TEXT'},{type:'input_value',name:'SECS',check:'Number'}]},
+{type:'say',message0:'говорить %1',previousStatement:null,nextStatement:null,colour:'#8b5cf6',
+args0:[{type:'input_value',name:'TEXT'}]},
+{type:'think_for',message0:'думать %1 %2 секунд',previousStatement:null,nextStatement:null,colour:'#8b5cf6',
+args0:[{type:'input_value',name:'TEXT'},{type:'input_value',name:'SECS',check:'Number'}]},
+{type:'think',message0:'думать %1',previousStatement:null,nextStatement:null,colour:'#8b5cf6',
+args0:[{type:'input_value',name:'TEXT'}]},
+{type:'next_costume',message0:'следующий костюм',previousStatement:null,nextStatement:null,colour:'#8b5cf6'},
+{type:'set_costume',message0:'изменить костюм на %1',previousStatement:null,nextStatement:null,colour:'#8b5cf6',
+args0:[{type:'field_dropdown',name:'NAME',options:costumeOptions}]},
+{type:'show',message0:'показаться',previousStatement:null,nextStatement:null,colour:'#8b5cf6'},
+{type:'hide',message0:'спрятаться',previousStatement:null,nextStatement:null,colour:'#8b5cf6'},
+{type:'go_to_front',message0:'перейти на передний план',previousStatement:null,nextStatement:null,colour:'#8b5cf6'},
+{type:'go_to_back',message0:'перейти на задний план',previousStatement:null,nextStatement:null,colour:'#8b5cf6'},
+{type:'change_size',message0:'изменить размер на %1',previousStatement:null,nextStatement:null,colour:'#8b5cf6',
+args0:[{type:'input_value',name:'DS',check:'Number'}]},
+{type:'set_size',message0:'задать размер %1 %',previousStatement:null,nextStatement:null,colour:'#8b5cf6',
+args0:[{type:'input_value',name:'SIZE',check:'Number'}]},
+{type:'change_effect',message0:'изменить эффект цвет на %1',previousStatement:null,nextStatement:null,colour:'#8b5cf6',
+args0:[{type:'input_value',name:'DE',check:'Number'}]},
+{type:'set_effect',message0:'задать эффект цвет %1',previousStatement:null,nextStatement:null,colour:'#8b5cf6',
+args0:[{type:'input_value',name:'DE',check:'Number'}]},
+{type:'change_ghost',message0:'изменить эффект призрак на %1',previousStatement:null,nextStatement:null,colour:'#8b5cf6',
+args0:[{type:'input_value',name:'GH',check:'Number'}]},
+{type:'clear_effects',message0:'убрать эффекты',previousStatement:null,nextStatement:null,colour:'#8b5cf6'},
+{type:'set_bg',message0:'установить фон %1',previousStatement:null,nextStatement:null,colour:'#8b5cf6',
+args0:[{type:'field_dropdown',name:'BG',options:bgOptions}]},
+{type:'set_rot_style',message0:'стиль вращения %1',previousStatement:null,nextStatement:null,colour:'#8b5cf6',
+args0:[{type:'field_dropdown',name:'STYLE',options:[['вращаться вокруг','all'],
+['только влево-вправо','leftright'],['не поворачиваться','none']]}]},
+{type:'play_sound',message0:'играть звук %1',previousStatement:null,nextStatement:null,colour:'#ec4899',
+args0:[{type:'field_dropdown',name:'SOUND',options:soundOptions}]},
+{type:'play_sound_wait',message0:'играть звук %1 до конца',previousStatement:null,nextStatement:null,colour:'#ec4899',
+args0:[{type:'field_dropdown',name:'SOUND',options:soundOptions}]},
+{type:'stop_sounds',message0:'остановить все звуки',previousStatement:null,nextStatement:null,colour:'#ec4899'},
+{type:'change_volume',message0:'изменить громкость на %1',previousStatement:null,nextStatement:null,colour:'#ec4899',
+args0:[{type:'input_value',name:'DV',check:'Number'}]},
+{type:'set_volume',message0:'задать громкость %1 %',previousStatement:null,nextStatement:null,colour:'#ec4899',
+args0:[{type:'input_value',name:'VOL',check:'Number'}]},
+{type:'volume',message0:'громкость',output:'Number',colour:'#ec4899'},
+{type:'wait',message0:'ждать %1 секунд',previousStatement:null,nextStatement:null,colour:'#f97316',
+args0:[{type:'input_value',name:'SECS',check:'Number'}]},
+{type:'repeat',message0:'повторить %1 раз %2',previousStatement:null,nextStatement:null,colour:'#f97316',
+args0:[{type:'input_value',name:'TIMES',check:'Number'},{type:'input_statement',name:'DO'}]},
+{type:'forever',message0:'повторять всегда %1',previousStatement:null,colour:'#f97316',
+args0:[{type:'input_statement',name:'DO'}]},
+{type:'if_then',message0:'если %1 то %2',previousStatement:null,nextStatement:null,colour:'#f97316',
+args0:[{type:'input_value',name:'COND',check:'Boolean'},{type:'input_statement',name:'DO'}]},
+{type:'if_else',message0:'если %1 то %2 иначе %3',previousStatement:null,nextStatement:null,colour:'#f97316',
+args0:[{type:'input_value',name:'COND',check:'Boolean'},{type:'input_statement',name:'DO'},{type:'input_statement',name:'ELSE'}]},
+{type:'repeat_until',message0:'повторять пока не %1 %2',previousStatement:null,nextStatement:null,colour:'#f97316',
+args0:[{type:'input_value',name:'COND',check:'Boolean'},{type:'input_statement',name:'DO'}]},
+{type:'wait_until',message0:'ждать пока %1',previousStatement:null,nextStatement:null,colour:'#f97316',
+args0:[{type:'input_value',name:'COND',check:'Boolean'}]},
+{type:'stop_all',message0:'стоп ⛔ все',previousStatement:null,colour:'#f97316'},
+{type:'stop_this',message0:'стоп ⛔ этот скрипт',previousStatement:null,colour:'#f97316'},
+{type:'create_clone',message0:'создать клон %1',previousStatement:null,nextStatement:null,colour:'#f97316',
+args0:[{type:'field_dropdown',name:'SPRITE',options:spriteOptions}]},
+{type:'when_clone',message0:'когда я начинаю как клон',nextStatement:null,colour:'#f97316'},
+{type:'delete_clone',message0:'удалить этот клон',previousStatement:null,colour:'#f97316'},
+{type:'for_loop',message0:'для %1 от %2 до %3 %4',previousStatement:null,nextStatement:null,colour:'#f97316',
+args0:[{type:'field_variable',name:'VAR'},{type:'input_value',name:'FROM',check:'Number'},
+{type:'input_value',name:'TO',check:'Number'},{type:'input_statement',name:'DO'}]},
+{type:'clone_count',message0:'количество клонов',output:'Number',colour:'#f97316'},
+{type:'phys_on',message0:'🧲 включить физику',previousStatement:null,nextStatement:null,colour:'#0f766e'},
+{type:'phys_off',message0:'выключить физику',previousStatement:null,nextStatement:null,colour:'#0f766e'},
+{type:'set_gravity',message0:'задать гравитацию %1',previousStatement:null,nextStatement:null,colour:'#0f766e',
+args0:[{type:'input_value',name:'G',check:'Number'}]},
+{type:'set_bounce',message0:'задать упругость %1 %',previousStatement:null,nextStatement:null,colour:'#0f766e',
+args0:[{type:'input_value',name:'B',check:'Number'}]},
+{type:'set_friction',message0:'задать трение %1',previousStatement:null,nextStatement:null,colour:'#0f766e',
+args0:[{type:'input_value',name:'F',check:'Number'}]},
+{type:'set_mass',message0:'задать массу %1',previousStatement:null,nextStatement:null,colour:'#0f766e',
+args0:[{type:'input_value',name:'M',check:'Number'}]},
+{type:'set_vel',message0:'задать скорость x %1 y %2',previousStatement:null,nextStatement:null,colour:'#0f766e',
+args0:[{type:'input_value',name:'VX',check:'Number'},{type:'input_value',name:'VY',check:'Number'}]},
+{type:'add_force',message0:'толкнуть с силой %1 в направлении %2',previousStatement:null,nextStatement:null,colour:'#0f766e',
+args0:[{type:'input_value',name:'FORCE',check:'Number'},{type:'input_value',name:'DIR',check:'Number'}]},
+{type:'jump',message0:'прыгнуть с силой %1',previousStatement:null,nextStatement:null,colour:'#0f766e',
+args0:[{type:'input_value',name:'F',check:'Number'}]},
+{type:'phys_stop',message0:'остановить движение',previousStatement:null,nextStatement:null,colour:'#0f766e'},
+{type:'vel_x',message0:'скорость x',output:'Number',colour:'#0f766e'},
+{type:'vel_y',message0:'скорость y',output:'Number',colour:'#0f766e'},
+{type:'speed',message0:'быстрота',output:'Number',colour:'#0f766e'},
+{type:'on_ground',message0:'на земле?',output:'Boolean',colour:'#0f766e'},
+{type:'math_arith',message0:'%1 %2 %3',output:'Number',colour:'#22c55e',
+args0:[{type:'input_value',name:'A',check:'Number'},
+{type:'field_dropdown',name:'OP',options:[['+','ADD'],['−','MINUS'],['×','MULTIPLY'],['÷','DIVIDE']]},
+{type:'input_value',name:'B',check:'Number'}]},
+{type:'random',message0:'случайное от %1 до %2',output:'Number',colour:'#22c55e',
+args0:[{type:'input_value',name:'A',check:'Number'},{type:'input_value',name:'B',check:'Number'}]},
+{type:'compare',message0:'%1 %2 %3',output:'Boolean',colour:'#22c55e',
+args0:[{type:'input_value',name:'A'},{type:'field_dropdown',name:'OP',options:[['>','GT'],['<','LT'],['=','EQ']]},
+{type:'input_value',name:'B'}]},
+{type:'logic_and',message0:'%1 и %2',output:'Boolean',colour:'#22c55e',
+args0:[{type:'input_value',name:'A',check:'Boolean'},{type:'input_value',name:'B',check:'Boolean'}]},
+{type:'logic_or',message0:'%1 или %2',output:'Boolean',colour:'#22c55e',
+args0:[{type:'input_value',name:'A',check:'Boolean'},{type:'input_value',name:'B',check:'Boolean'}]},
+{type:'logic_not',message0:'не %1',output:'Boolean',colour:'#22c55e',
+args0:[{type:'input_value',name:'VALUE',check:'Boolean'}]},
+{type:'join',message0:'объединить %1 %2',output:'String',colour:'#22c55e',
+args0:[{type:'input_value',name:'A'},{type:'input_value',name:'B'}]},
+{type:'letter_of',message0:'буква %1 в %2',output:'String',colour:'#22c55e',
+args0:[{type:'input_value',name:'INDEX',check:'Number'},{type:'input_value',name:'TEXT'}]},
+{type:'string_length',message0:'длина %1',output:'Number',colour:'#22c55e',
+args0:[{type:'input_value',name:'TEXT'}]},
+{type:'mod',message0:'остаток от %1 делить на %2',output:'Number',colour:'#22c55e',
+args0:[{type:'input_value',name:'A',check:'Number'},{type:'input_value',name:'B',check:'Number'}]},
+{type:'round',message0:'округлить %1',output:'Number',colour:'#22c55e',
+args0:[{type:'input_value',name:'NUM',check:'Number'}]},
+{type:'math_func',message0:'%1 от %2',output:'Number',colour:'#22c55e',
+args0:[{type:'field_dropdown',name:'FUNC',options:[['корень','SQRT'],['абс','ABS'],['пол','FLOOR'],['потолок','CEIL']]},
+{type:'input_value',name:'NUM',check:'Number'}]},
+{type:'math_pow',message0:'%1 в степени %2',output:'Number',colour:'#22c55e',
+args0:[{type:'input_value',name:'A',check:'Number'},{type:'input_value',name:'B',check:'Number'}]},
+{type:'math_trig',message0:'%1 от %2',output:'Number',colour:'#22c55e',
+args0:[{type:'field_dropdown',name:'FUNC',options:[['синус','SIN'],['косинус','COS'],['тангенс','TAN']]},
+{type:'input_value',name:'NUM',check:'Number'}]},
+{type:'math_minmax',message0:'%1 из %2 и %3',output:'Number',colour:'#22c55e',
+args0:[{type:'field_dropdown',name:'OP',options:[['наибольшее','MAX'],['наименьшее','MIN']]},
+{type:'input_value',name:'A',check:'Number'},{type:'input_value',name:'B',check:'Number'}]},
+{type:'to_number',message0:'число из %1',output:'Number',colour:'#22c55e',
+args0:[{type:'input_value',name:'VALUE'}]},
+{type:'contains',message0:'%1 содержит %2 ?',output:'Boolean',colour:'#22c55e',
+args0:[{type:'input_value',name:'A'},{type:'input_value',name:'B'}]},
+{type:'string_case',message0:'%1 в %2 регистре',output:'String',colour:'#22c55e',
+args0:[{type:'input_value',name:'TEXT'},{type:'field_dropdown',name:'CASE',options:[['верхнем','UPPER'],['нижнем','LOWER']]}]},
+{type:'string_replace',message0:'заменить в %1 «%2» на «%3»',output:'String',colour:'#22c55e',
+args0:[{type:'input_value',name:'TEXT'},{type:'input_value',name:'FIND'},{type:'input_value',name:'TO'}]},
+{type:'list_add',message0:'добавить %1 в список %2',previousStatement:null,nextStatement:null,colour:'#22c55e',
+args0:[{type:'input_value',name:'ITEM'},{type:'field_input',name:'LIST',text:'список'}]},
+{type:'list_insert',message0:'вставить %1 на место %2 в список %3',previousStatement:null,nextStatement:null,colour:'#22c55e',
+args0:[{type:'input_value',name:'ITEM'},{type:'input_value',name:'INDEX',check:'Number'},
+{type:'field_input',name:'LIST',text:'список'}]},
+{type:'list_replace',message0:'заменить в списке %1 место %2 на %3',previousStatement:null,nextStatement:null,colour:'#22c55e',
+args0:[{type:'field_input',name:'LIST',text:'список'},{type:'input_value',name:'INDEX',check:'Number'},
+{type:'input_value',name:'ITEM'}]},
+{type:'list_delete',message0:'удалить из списка %1 место %2',previousStatement:null,nextStatement:null,colour:'#22c55e',
+args0:[{type:'field_input',name:'LIST',text:'список'},{type:'input_value',name:'INDEX',check:'Number'}]},
+{type:'list_clear',message0:'очистить список %1',previousStatement:null,nextStatement:null,colour:'#22c55e',
+args0:[{type:'field_input',name:'LIST',text:'список'}]},
+{type:'list_get',message0:'элемент %1 из списка %2',output:null,colour:'#22c55e',
+args0:[{type:'input_value',name:'INDEX',check:'Number'},{type:'field_input',name:'LIST',text:'список'}]},
+{type:'list_length',message0:'длина списка %1',output:'Number',colour:'#22c55e',
+args0:[{type:'field_input',name:'LIST',text:'список'}]},
+{type:'list_contains',message0:'список %1 содержит %2 ?',output:'Boolean',colour:'#22c55e',
+args0:[{type:'field_input',name:'LIST',text:'список'},{type:'input_value',name:'ITEM'}]},
+{type:'list_index',message0:'номер %1 в списке %2',output:'Number',colour:'#22c55e',
+args0:[{type:'input_value',name:'ITEM'},{type:'field_input',name:'LIST',text:'список'}]},
+{type:'math_number',message0:'%1',output:'Number',colour:'#22c55e',
+args0:[{type:'field_number',name:'NUM',value:0}]},
+{type:'text',message0:'%1',output:'String',colour:'#22c55e',
+args0:[{type:'field_input',name:'TEXT',text:'текст'}]},
+{type:'logic_boolean',message0:'%1',output:'Boolean',colour:'#22c55e',
+args0:[{type:'field_dropdown',name:'BOOL',options:[['истина','TRUE'],['ложь','FALSE']]}]},
+{type:'variables_set',message0:'задать %1 = %2',previousStatement:null,nextStatement:null,colour:'#f43f5e',
+args0:[{type:'field_variable',name:'VAR'},{type:'input_value',name:'VALUE'}]},
+{type:'variables_change',message0:'изменить %1 на %2',previousStatement:null,nextStatement:null,colour:'#f43f5e',
+args0:[{type:'field_variable',name:'VAR'},{type:'input_value',name:'VALUE'}]},
+{type:'variables_get',message0:'%1',output:null,colour:'#f43f5e',args0:[{type:'field_variable',name:'VAR'}]},
+{type:'show_variable',message0:'показать переменную %1',previousStatement:null,nextStatement:null,colour:'#f43f5e',
+args0:[{type:'field_variable',name:'VAR'}]},
+{type:'hide_variable',message0:'спрятать переменную %1',previousStatement:null,nextStatement:null,colour:'#f43f5e',
+args0:[{type:'field_variable',name:'VAR'}]},
+{type:'mouse_x',message0:'мышь x',output:'Number',colour:'#06b6d4'},
+{type:'mouse_y',message0:'мышь y',output:'Number',colour:'#06b6d4'},
+{type:'mouse_down',message0:'мышь нажата?',output:'Boolean',colour:'#06b6d4'},
+{type:'key_pressed',message0:'клавиша %1 нажата?',output:'Boolean',colour:'#06b6d4',
+args0:[{type:'field_dropdown',name:'KEY',options:keyOptions}]},
+{type:'touching_edge',message0:'касается края?',output:'Boolean',colour:'#06b6d4'},
+{type:'touching_mouse',message0:'касается указателя мыши?',output:'Boolean',colour:'#06b6d4'},
+{type:'touching_sprite',message0:'касается %1 ?',output:'Boolean',colour:'#06b6d4',
+args0:[{type:'field_dropdown',name:'TARGET',options:spriteOptions}]},
+{type:'touching_wall',message0:'касается границы %1 ?',output:'Boolean',colour:'#06b6d4',
+args0:[{type:'field_dropdown',name:'SIDE',options:[['любой','any'],['сверху','top'],['снизу','bottom'],['слева','left'],['справа','right']]}]},
+{type:'wall_on',message0:'граница %1 включена?',output:'Boolean',colour:'#06b6d4',
+args0:[{type:'field_dropdown',name:'SIDE',options:[['сверху','top'],['снизу','bottom'],['слева','left'],['справа','right']]}]},
+{type:'distance_to',message0:'расстояние до %1',output:'Number',colour:'#06b6d4',
+args0:[{type:'field_dropdown',name:'TARGET',options:[['указатель мыши','mouse']]}]},
+{type:'ask_wait',message0:'спрашивать %1 и ждать',previousStatement:null,nextStatement:null,colour:'#06b6d4',
+args0:[{type:'input_value',name:'TEXT'}]},
+{type:'answer',message0:'ответ',output:'String',colour:'#06b6d4'},
+{type:'timer',message0:'таймер',output:'Number',colour:'#06b6d4'},
+{type:'reset_timer',message0:'сбросить таймер',previousStatement:null,nextStatement:null,colour:'#06b6d4'},
+{type:'current_date',message0:'текущий %1',output:'String',colour:'#06b6d4',
+args0:[{type:'field_dropdown',name:'DATE',options:[['год','year'],['месяц','month'],['день','day'],['час','hour'],['минута','minute'],['секунда','second']]}]},
+/* ===== 🎵 МУЗЫКА (дополнение) ===== */
+{type:'play_note',message0:'🎵 играть ноту %1 %2 такта',previousStatement:null,nextStatement:null,colour:'#9333ea',
+args0:[{type:'input_value',name:'NOTE',check:'Number'},{type:'input_value',name:'BEATS',check:'Number'}]},
+{type:'note_of',message0:'нота %1',output:'Number',colour:'#9333ea',
+args0:[{type:'field_dropdown',name:'NOTE',options:[['до (60)','60'],['до# (61)','61'],['ре (62)','62'],['ре# (63)','63'],
+['ми (64)','64'],['фа (65)','65'],['фа# (66)','66'],['соль (67)','67'],['соль# (68)','68'],['ля (69)','69'],
+['ля# (70)','70'],['си (71)','71'],['до 2-й октавы (72)','72']]}]},
+{type:'set_instrument',message0:'инструмент %1',previousStatement:null,nextStatement:null,colour:'#9333ea',
+args0:[{type:'field_dropdown',name:'INSTR',options:[['пианино 🎹','piano'],['гитара 🎸','guitar'],
+['флейта 🎼','flute'],['орган ⛪','organ'],['бас 🎛️','bass'],['синтезатор 🎛️','synth']]}]},
+{type:'play_drum',message0:'барабан %1',previousStatement:null,nextStatement:null,colour:'#9333ea',
+args0:[{type:'field_dropdown',name:'DRUM',options:[['бочка 🥁','kick'],['малый 🪘','snare'],
+['тарелка 🛎️','hat'],['хлопок 👏','clap']]}]},
+{type:'set_tempo',message0:'задать темп %1 уд/мин',previousStatement:null,nextStatement:null,colour:'#9333ea',
+args0:[{type:'input_value',name:'T',check:'Number'}]},
+{type:'change_tempo',message0:'изменить темп на %1',previousStatement:null,nextStatement:null,colour:'#9333ea',
+args0:[{type:'input_value',name:'T',check:'Number'}]},
+{type:'tempo',message0:'темп',output:'Number',colour:'#9333ea'},
+{type:'rest_note',message0:'пауза %1 такта',previousStatement:null,nextStatement:null,colour:'#9333ea',
+args0:[{type:'input_value',name:'BEATS',check:'Number'}]},
+/* ===== ✏️ ПЕРО (дополнение) ===== */
+{type:'pen_down',message0:'✏️ опустить перо',previousStatement:null,nextStatement:null,colour:'#4f46e5'},
+{type:'pen_up',message0:'✏️ поднять перо',previousStatement:null,nextStatement:null,colour:'#4f46e5'},
+{type:'pen_clear',message0:'✏️ стереть всё нарисованное',previousStatement:null,nextStatement:null,colour:'#4f46e5'},
+{type:'set_pen_color',message0:'задать цвет пера %1',previousStatement:null,nextStatement:null,colour:'#4f46e5',
+args0:[{type:'field_colour',name:'COLOR',colour:'#3b82f6'}]},
+{type:'change_pen_color',message0:'изменить цвет пера на %1',previousStatement:null,nextStatement:null,colour:'#4f46e5',
+args0:[{type:'input_value',name:'HUE',check:'Number'}]},
+{type:'set_pen_size',message0:'задать толщину пера %1',previousStatement:null,nextStatement:null,colour:'#4f46e5',
+args0:[{type:'input_value',name:'S',check:'Number'}]},
+{type:'change_pen_size',message0:'изменить толщину пера на %1',previousStatement:null,nextStatement:null,colour:'#4f46e5',
+args0:[{type:'input_value',name:'S',check:'Number'}]},
+{type:'set_pen_opacity',message0:'задать прозрачность пера %1 %',previousStatement:null,nextStatement:null,colour:'#4f46e5',
+args0:[{type:'input_value',name:'O',check:'Number'}]},
+{type:'pen_stamp',message0:'поставить штамп',previousStatement:null,nextStatement:null,colour:'#4f46e5'}
+]);
+const sh=(t,f)=>({shadow:{type:t,fields:f}});
+const MUSIC_CAT={kind:'category',name:'🎵 Музыка',colour:'#9333ea',contents:[
+{kind:'block',type:'play_note',inputs:{NOTE:sh('note_of',{NOTE:'60'}),BEATS:sh('math_number',{NUM:0.5})}},
+{kind:'block',type:'note_of',fields:{NOTE:'60'}},
+{kind:'block',type:'set_instrument',fields:{INSTR:'piano'}},
+{kind:'block',type:'play_drum',fields:{DRUM:'kick'}},
+{kind:'block',type:'rest_note',inputs:{BEATS:sh('math_number',{NUM:0.5})}},
+{kind:'block',type:'set_tempo',inputs:{T:sh('math_number',{NUM:60})}},
+{kind:'block',type:'change_tempo',inputs:{T:sh('math_number',{NUM:20})}},
+{kind:'block',type:'tempo'},
+{kind:'block',type:'stop_sounds'}]};
+const PEN_CAT={kind:'category',name:'✏️ Перо',colour:'#4f46e5',contents:[
+{kind:'block',type:'pen_down'},{kind:'block',type:'pen_up'},
+{kind:'block',type:'pen_clear'},
+{kind:'block',type:'set_pen_color',fields:{COLOR:'#3b82f6'}},
+{kind:'block',type:'change_pen_color',inputs:{HUE:sh('math_number',{NUM:10})}},
+{kind:'block',type:'set_pen_size',inputs:{S:sh('math_number',{NUM:3})}},
+{kind:'block',type:'change_pen_size',inputs:{S:sh('math_number',{NUM:1})}},
+{kind:'block',type:'set_pen_opacity',inputs:{O:sh('math_number',{NUM:100})}},
+{kind:'block',type:'pen_stamp'}]};
+let enabledExt={music:false,pen:false};
+function toolboxContents(){ const c=[
+{kind:'category',name:'🚩 События',colour:'#f59e0b',contents:[
+{kind:'block',type:'ev_flag'},{kind:'block',type:'ev_click'},
+{kind:'block',type:'ev_key',fields:{KEY:'space'}},
+{kind:'block',type:'ev_broadcast',fields:{MSG:'сообщение1'}},
+{kind:'block',type:'broadcast',fields:{MSG:'сообщение1'}},
+{kind:'block',type:'broadcast_wait',fields:{MSG:'сообщение1'}}]},
+{kind:'category',name:'🏃 Движение',colour:'#3b82f6',contents:[
+{kind:'block',type:'move_steps',inputs:{STEPS:sh('math_number',{NUM:10})}},
+{kind:'block',type:'turn_r',inputs:{DEGREES:sh('math_number',{NUM:15})}},
+{kind:'block',type:'turn_l',inputs:{DEGREES:sh('math_number',{NUM:15})}},
+{kind:'block',type:'point_towards_mouse'},
+{kind:'block',type:'goto_xy',inputs:{X:sh('math_number',{NUM:0}),Y:sh('math_number',{NUM:0})}},
+{kind:'block',type:'goto_random'},
+{kind:'block',type:'goto_mouse'},
+{kind:'block',type:'glide',inputs:{SECS:sh('math_number',{NUM:1}),X:sh('math_number',{NUM:0}),Y:sh('math_number',{NUM:0})}},
+{kind:'block',type:'glide_mouse',inputs:{SECS:sh('math_number',{NUM:1})}},
+{kind:'block',type:'point_dir',inputs:{DIR:sh('math_number',{NUM:90})}},
+{kind:'block',type:'change_x',inputs:{DX:sh('math_number',{NUM:10})}},
+{kind:'block',type:'change_y',inputs:{DY:sh('math_number',{NUM:10})}},
+{kind:'block',type:'set_x',inputs:{X:sh('math_number',{NUM:0})}},
+{kind:'block',type:'set_y',inputs:{Y:sh('math_number',{NUM:0})}},
+{kind:'block',type:'bounce'},
+{kind:'block',type:'set_walls',fields:{MODE:'all'}},
+{kind:'block',type:'x_pos'},{kind:'block',type:'y_pos'},{kind:'block',type:'direction'}]},
+{kind:'category',name:'👁️ Внешность',colour:'#8b5cf6',contents:[
+{kind:'block',type:'say_for',inputs:{TEXT:sh('text',{TEXT:'Привет!'}),SECS:sh('math_number',{NUM:2})}},
+{kind:'block',type:'say',inputs:{TEXT:sh('text',{TEXT:'Привет!'})}},
+{kind:'block',type:'think_for',inputs:{TEXT:sh('text',{TEXT:'Хм...'}),SECS:sh('math_number',{NUM:2})}},
+{kind:'block',type:'think',inputs:{TEXT:sh('text',{TEXT:'Хм...'})}},
+{kind:'block',type:'next_costume'},
+{kind:'block',type:'set_costume',fields:{NAME:'костюм 1'}},
+{kind:'block',type:'show'},{kind:'block',type:'hide'},
+{kind:'block',type:'go_to_front'},{kind:'block',type:'go_to_back'},
+{kind:'block',type:'change_size',inputs:{DS:sh('math_number',{NUM:10})}},
+{kind:'block',type:'set_size',inputs:{SIZE:sh('math_number',{NUM:100})}},
+{kind:'block',type:'set_rot_style',fields:{STYLE:'all'}},
+{kind:'block',type:'change_effect',inputs:{DE:sh('math_number',{NUM:25})}},
+{kind:'block',type:'set_effect',inputs:{DE:sh('math_number',{NUM:0})}},
+{kind:'block',type:'change_ghost',inputs:{GH:sh('math_number',{NUM:25})}},
+{kind:'block',type:'clear_effects'},{kind:'block',type:'set_bg',fields:{BG:'sky'}}]},
+{kind:'category',name:'🔊 Звук',colour:'#ec4899',contents:[
+{kind:'block',type:'play_sound',fields:{SOUND:'meow'}},
+{kind:'block',type:'play_sound_wait',fields:{SOUND:'meow'}},
+{kind:'block',type:'stop_sounds'},
+{kind:'block',type:'change_volume',inputs:{DV:sh('math_number',{NUM:-10})}},
+{kind:'block',type:'set_volume',inputs:{VOL:sh('math_number',{NUM:100})}},
+{kind:'block',type:'volume'}]},
+{kind:'category',name:'🎛️ Управление',colour:'#f97316',contents:[
+{kind:'block',type:'wait',inputs:{SECS:sh('math_number',{NUM:1})}},
+{kind:'block',type:'repeat',inputs:{TIMES:sh('math_number',{NUM:10})}},
+{kind:'block',type:'forever'},
+{kind:'block',type:'if_then',inputs:{COND:sh('logic_boolean',{BOOL:'TRUE'})}},
+{kind:'block',type:'if_else',inputs:{COND:sh('logic_boolean',{BOOL:'TRUE'})}},
+{kind:'block',type:'repeat_until',inputs:{COND:sh('logic_boolean',{BOOL:'TRUE'})}},
+{kind:'block',type:'wait_until',inputs:{COND:sh('logic_boolean',{BOOL:'TRUE'})}},
+{kind:'block',type:'stop_all'},
+{kind:'block',type:'stop_this'},
+{kind:'block',type:'create_clone',fields:{SPRITE:'myself'}},
+{kind:'block',type:'when_clone'},
+{kind:'block',type:'delete_clone'},
+{kind:'block',type:'for_loop',fields:{VAR:'i'},inputs:{FROM:sh('math_number',{NUM:1}),TO:sh('math_number',{NUM:10})}},
+{kind:'block',type:'clone_count'}]},
+{kind:'category',name:'🧲 Физика',colour:'#0f766e',contents:[
+{kind:'block',type:'phys_on'},{kind:'block',type:'phys_off'},
+{kind:'block',type:'set_gravity',inputs:{G:sh('math_number',{NUM:10})}},
+{kind:'block',type:'set_bounce',inputs:{B:sh('math_number',{NUM:70})}},
+{kind:'block',type:'set_friction',inputs:{F:sh('math_number',{NUM:20})}},
+{kind:'block',type:'set_mass',inputs:{M:sh('math_number',{NUM:1})}},
+{kind:'block',type:'set_vel',inputs:{VX:sh('math_number',{NUM:0}),VY:sh('math_number',{NUM:0})}},
+{kind:'block',type:'add_force',inputs:{FORCE:sh('math_number',{NUM:10}),DIR:sh('math_number',{NUM:0})}},
+{kind:'block',type:'jump',inputs:{F:sh('math_number',{NUM:12})}},
+{kind:'block',type:'phys_stop'},
+{kind:'block',type:'vel_x'},{kind:'block',type:'vel_y'},
+{kind:'block',type:'speed'},{kind:'block',type:'on_ground'}]},
+{kind:'category',name:'⚙️ Операторы',colour:'#22c55e',contents:[
+{kind:'block',type:'math_arith',inputs:{A:sh('math_number',{NUM:1}),B:sh('math_number',{NUM:1})}},
+{kind:'block',type:'random',inputs:{A:sh('math_number',{NUM:1}),B:sh('math_number',{NUM:10})}},
+{kind:'block',type:'compare',inputs:{A:sh('math_number',{NUM:1}),B:sh('math_number',{NUM:1})}},
+{kind:'block',type:'logic_and'},{kind:'block',type:'logic_or'},{kind:'block',type:'logic_not'},
+{kind:'block',type:'join',inputs:{A:sh('text',{TEXT:'Привет, '}),B:sh('text',{TEXT:'мир!'})}},
+{kind:'block',type:'letter_of',inputs:{INDEX:sh('math_number',{NUM:1}),TEXT:sh('text',{TEXT:'мир'})}},
+{kind:'block',type:'string_length',inputs:{TEXT:sh('text',{TEXT:'мир'})}},
+{kind:'block',type:'mod',inputs:{A:sh('math_number',{NUM:10}),B:sh('math_number',{NUM:3})}},
+{kind:'block',type:'round',inputs:{NUM:sh('math_number',{NUM:3.14})}},
+{kind:'block',type:'math_func',inputs:{NUM:sh('math_number',{NUM:9})}},
+{kind:'block',type:'math_pow',inputs:{A:sh('math_number',{NUM:2}),B:sh('math_number',{NUM:3})}},
+{kind:'block',type:'math_trig',inputs:{NUM:sh('math_number',{NUM:30})}},
+{kind:'block',type:'math_minmax',inputs:{A:sh('math_number',{NUM:1}),B:sh('math_number',{NUM:2})}},
+{kind:'block',type:'to_number',inputs:{VALUE:sh('text',{TEXT:'10'})}},
+{kind:'block',type:'contains',inputs:{A:sh('text',{TEXT:'привет'}),B:sh('text',{TEXT:'вет'})}},
+{kind:'block',type:'string_case',inputs:{TEXT:sh('text',{TEXT:'Привет'})}},
+{kind:'block',type:'string_replace',inputs:{TEXT:sh('text',{TEXT:'кот'}),FIND:sh('text',{TEXT:'к'}),TO:sh('text',{TEXT:'б'})}},
+{kind:'block',type:'list_add',inputs:{ITEM:sh('text',{TEXT:'элемент'})}},
+{kind:'block',type:'list_insert',inputs:{ITEM:sh('text',{TEXT:'элемент'}),INDEX:sh('math_number',{NUM:1})}},
+{kind:'block',type:'list_replace',inputs:{INDEX:sh('math_number',{NUM:1}),ITEM:sh('text',{TEXT:'новое'})}},
+{kind:'block',type:'list_delete',inputs:{INDEX:sh('math_number',{NUM:1})}},
+{kind:'block',type:'list_clear'},
+{kind:'block',type:'list_get',inputs:{INDEX:sh('math_number',{NUM:1})}},
+{kind:'block',type:'list_length'},
+{kind:'block',type:'list_contains',inputs:{ITEM:sh('text',{TEXT:'элемент'})}},
+{kind:'block',type:'list_index',inputs:{ITEM:sh('text',{TEXT:'элемент'})}},
+{kind:'block',type:'math_number'},{kind:'block',type:'text'},{kind:'block',type:'logic_boolean'}]},
+{kind:'category',name:'📦 Переменные',colour:'#f43f5e',custom:'VARIABLE'},
+{kind:'category',name:'🖱️ Сенсоры',colour:'#06b6d4',contents:[
+{kind:'block',type:'mouse_x'},{kind:'block',type:'mouse_y'},
+{kind:'block',type:'mouse_down'},
+{kind:'block',type:'key_pressed',fields:{KEY:'space'}},
+{kind:'block',type:'touching_edge'},
+{kind:'block',type:'touching_mouse'},
+{kind:'block',type:'touching_sprite',fields:{TARGET:'myself'}},
+{kind:'block',type:'touching_wall',fields:{SIDE:'any'}},
+{kind:'block',type:'wall_on',fields:{SIDE:'bottom'}},
+{kind:'block',type:'distance_to',fields:{TARGET:'mouse'}},
+{kind:'block',type:'ask_wait',inputs:{TEXT:sh('text',{TEXT:'Как тебя зовут?'})}},
+{kind:'block',type:'answer'},
+{kind:'block',type:'timer'},
+{kind:'block',type:'reset_timer'},
+{kind:'block',type:'current_date',fields:{DATE:'year'}}]},
+{kind:'category',name:'🧩 Другие блоки',colour:'#ff6680',custom:'CUSTOMBLOCKS'}
+];
+if(enabledExt.music){ c.push({kind:'sep',gap:14}); c.push(MUSIC_CAT); }
+if(enabledExt.pen){ c.push({kind:'sep',gap:14}); c.push(PEN_CAT); }
+return c; }
+function refreshToolbox(){ if(workspace)
+workspace.updateToolbox({kind:'categoryToolbox',contents:toolboxContents()}); }
+/* ===== СОСТОЯНИЕ ===== */
+const uid=()=>Math.random().toString(36).slice(2,9);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const $=id=>document.getElementById(id);
+let workspace=null;
+let sprites=[], current=null, vars={}, lists={}, globalOn=false, threads=[], activeTab='code';
+let customSounds=[], customBg=[], activeAudios=[], activeOsc=[];
+let mousePos={x:0,y:0}, mouseDown=false, keysDown=new Set(), currentBgId='sky';
+let lastAnswer='', timerStart=Date.now(), globalVolume=100;
+let music={tempo:60,instrument:'piano'};
+let walls={top:true,bottom:true,left:true,right:true};
+let spriteModalMode='sprite';
+let bgEditMode=false;
+let projectName='Мой проект';
+let customBlocks=[];
+let curThread=null;
+const FAR=1500;
+const BG_PRESETS=[
+{id:'sky',name:'☁️ Небо',css:'linear-gradient(180deg,#7dd3fc,#e0f2fe 60%,#ecfdf5)'},
+{id:'sunset',name:'🌅 Закат',css:'linear-gradient(180deg,#fbbf24,#fb7185 55%,#8b5cf6)'},
+{id:'space',name:'🌌 Космос',css:'radial-gradient(circle at 30% 25%,#4338ca,#0f172a 75%)'},
+{id:'sea',name:'🌊 Море',css:'linear-gradient(180deg,#bae6fd,#0ea5e9 55%,#075985)'},
+{id:'meadow',name:'🌿 Поляна',css:'linear-gradient(180deg,#bbf7d0,#22c55e 60%,#15803d)'},
+{id:'desert',name:'🏜️ Пустыня',css:'linear-gradient(180deg,#fef3c7,#f59e0b 70%,#92400e)'},
+{id:'winter',name:'❄️ Зима',css:'linear-gradient(180deg,#bfdbfe,#f8fafc)'},
+{id:'night',name:'🌙 Ночь',css:'linear-gradient(180deg,#334155,#0f172a)'},
+{id:'rainbow',name:'🌈 Радуга',css:'linear-gradient(115deg,#f87171,#fbbf24,#4ade80,#38bdf8,#a78bfa)'},
+{id:'board',name:'🎓 Школьная доска',css:'linear-gradient(160deg,#14532d,#166534,#16a34a)'},
+{id:'neon',name:'💜 Неон',css:'linear-gradient(135deg,#1e1b4b,#4c1d95 55%,#831843)'},
+{id:'paper',name:'📄 Бумага',css:'#fffdf4'}];
+const BUILT_SOUNDS=[
+{id:'meow',name:'Мяу 🐱'},{id:'bark',name:'Гав 🐶'},{id:'laser',name:'Пиу ✨'},
+{id:'drum',name:'Барабан 🥁'},{id:'tada',name:'Фанфары 🎺'},{id:'jump',name:'Прыжок 🦘'}];
+const EMOJIS=['🐱','','🐭','🐹','','🦊','🐻','','','🐯',
+'🦁','🐮','','','🐵','🐔','','','🐺','🦄',
+'🐝','🐛','','','🐢','🐍','🦖','🐙','🦀','🐠',
+'🐬','','🦋','🚌','🚗','','⚽','🏀','⭐','❤️',
+'🍕','🍎','🍩','🎂','👸','🤖','','🎸','','🎁',
+'🌈','👾'];
+function bgOptions(){ const o=BG_PRESETS.map(b=>[b.name,b.id]);
+customBg.forEach(b=>o.push([b.name,b.id])); return o; }
+function soundOptions(){ const o=BUILT_SOUNDS.map(s=>[s.name,s.id]);
+customSounds.forEach(s=>o.push([s.name,'up:'+s.id])); return o.length?o:[['—','none']]; }
+function spriteOptions(){ const o=[['я сам','myself']];
+sprites.forEach(s=>o.push([s.name,s.id])); return o; }
+function costumeOptions(){ const c=(current&&current.costumes)||[];
+return c.length?c.map(k=>[k.name,k.name]):[['костюм 1','костюм 1']]; }
+/* ===== СВОИ БЛОКИ ===== */
+const escA=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const cbParams=cb=>cb.parts.filter(p=>p.kind!=='label');
+function cbSig(cb,forDef){ let msg=forDef?'определить ':''; const args=[]; let i=1;
+msg+=cb.name.replace(/%/g,'％');
+cb.parts.forEach(p=>{
+if(p.kind==='label') msg+=' '+p.text.replace(/%/g,'％');
+else if(forDef) msg+=' ⟨'+p.name.replace(/%/g,'％')+'⟩';
+else { msg+=' %'+i; args.push({type:'input_value',name:'ARG'+(i-1),check:p.kind==='bool'?'Boolean':undefined}); i++; } });
+if(forDef){ msg+=' %'+i; args.push({type:'input_statement',name:'DO'}); }
+return {msg,args}; }
+function defineCustomBlockTypes(cb){
+const call=cbSig(cb,false), def=cbSig(cb,true);
+Blockly.Blocks['cb_call_'+cb.id]={init:function(){ this.jsonInit(Object.assign({
+message0:call.msg,args0:call.args,previousStatement:null,nextStatement:null,colour:'#ff6680'})); }};
+Blockly.Blocks['cb_def_'+cb.id]={init:function(){ this.jsonInit(Object.assign({
+message0:def.msg,args0:def.args,nextStatement:null,colour:'#ff6680'})); }};
+cbParams(cb).forEach((p,k)=>{
+Blockly.Blocks['cb_arg_'+cb.id+'_'+k]={init:function(){ this.jsonInit({
+message0:'📥 '+p.name,output:p.kind==='bool'?'Boolean':undefined,colour:'#ff9db0'}); }}; }); }
+function findDefBody(id){ saveWs();
+const order=current?[current,...sprites.filter(s=>s!==current)]:sprites.slice();
+for(const sp of order){ if(!sp.xml)continue; const dom=strToXml(sp.xml); if(!dom)continue;
+const bl=dom.getElementsByTagName('block');
+for(const b of bl){ if(b.getAttribute&&b.getAttribute('type')==='cb_def_'+id)
+return stmtBlock(b,'DO'); } }
+return null; }
+let cbDraft=null;
+function openCustomBlockDialog(){ cbDraft={name:'',parts:[],noRefresh:false};
+$('cbNoRefresh').checked=false; renderCbPreview(); cbModal.classList.add('open'); }
+function cbAddPart(kind){ if(!cbDraft)return;
+const vals=cbParams(cbDraft).length+1;
+cbDraft.parts.push(kind==='label'?{kind:'label',text:'подпись'}
+:{kind,name:kind==='bool'?('условие '+vals):('значение '+vals)});
+renderCbPreview(); }
+function cbRemoveLast(){ if(cbDraft&&cbDraft.parts.length){ cbDraft.parts.pop(); renderCbPreview(); } }
+function renderCbPreview(){ const el=$('cbPreview'); if(!el||!cbDraft)return;
+el.innerHTML='<input class="cb-name" data-pi="name" placeholder="название блока" value="'+escA(cbDraft.name)+'">'+
+cbDraft.parts.map((p,i)=> p.kind==='label'
+? '<span class="cb-lbl"><input data-pi="'+i+'" value="'+escA(p.text)+'"></span>'
+: '<span class="cb-hole'+(p.kind==='bool'?' hex':'')+'"><input data-pi="'+i+'" value="'+escA(p.name)+'"></span>'
+).join(''); }
+$('cbPreview').addEventListener('input',e=>{ if(!cbDraft)return; const i=e.target.dataset.pi;
+if(i==='name') cbDraft.name=e.target.value;
+else { const p=cbDraft.parts[+i]; if(!p)return;
+if(p.kind==='label')p.text=e.target.value; else p.name=e.target.value; } });
+function cbCreate(){ if(!cbDraft)return;
+const name=(cbDraft.name||'').trim()||'мой блок';
+const cb={id:uid(),name:name.slice(0,24),parts:cbDraft.parts.map(p=>Object.assign({},p)),noRefresh:!!cbDraft.noRefresh};
+customBlocks.push(cb); defineCustomBlockTypes(cb); refreshToolbox();
+try{ Blockly.Xml.domToWorkspace(strToXml('<xml><block type="cb_def_'+cb.id+'" x="60" y="'+
+(60+customBlocks.length*150)+'"></block></xml>'),workspace); }catch(e){}
+cbModal.classList.remove('open'); saveWs();
+toast('Блок «'+cb.name+'» создан! Ищи его в «🧩 Другие блоки» 🧩'); }
+/* ===== BLOCKLY ===== */
+function bootWorkspace(){
+const theme=Blockly.Theme.defineTheme('kotkod',{base:Blockly.Themes.Zelos,
+fontStyle:{family:'Rubik',weight:500,size:11},
+componentStyle:{workspaceBackground:'#111827'}});
+workspace=Blockly.inject('blocklyDiv',{toolbox:{kind:'categoryToolbox',contents:toolboxContents()},
+theme,renderer:'zelos',trashcan:true,sounds:false,oneBasedIndex:true,
+grid:{spacing:28,length:2,colour:'#1f2937',snap:true},
+zoom:{controls:true,wheel:false,startScale:.9,minScale:.5,maxScale:1.4},
+move:{scrollbars:true,drag:true}});
+workspace.registerToolboxCategoryCallback('VARIABLE',ws=>{
+let xml='<xml><button text="➕ Создать переменную" callbackKey="CREATE_VAR"></button>';
+ws.getAllVariables().forEach(v=>{
+const n=v.name.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+xml+='<block type="variables_get"><field name="VAR">'+n+'</field></block>'+
+'<block type="variables_set"><field name="VAR">'+n+'</field>'+
+'<value name="VALUE"><shadow type="math_number"><field name="NUM">0</field></shadow></value></block>'+
+'<block type="variables_change"><field name="VAR">'+n+'</field>'+
+'<value name="VALUE"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>'+
+'<block type="show_variable"><field name="VAR">'+n+'</field></block>'+
+'<block type="hide_variable"><field name="VAR">'+n+'</field></block>';
+});
+return new DOMParser().parseFromString(xml+'</xml>','text/xml').documentElement;
+});
+workspace.registerButtonCallback('CREATE_VAR',btn=>
+Blockly.Variables.createVariableButtonHandler(btn.getTargetWorkspace()));
+workspace.registerToolboxCategoryCallback('CUSTOMBLOCKS',ws=>{
+let xml='<xml><button text="Создать блок" callbackKey="CREATE_CB"></button>';
+customBlocks.forEach(cb=>{ xml+='<block type="cb_call_'+cb.id+'"></block>';
+cbParams(cb).forEach((p,k)=>{ xml+='<block type="cb_arg_'+cb.id+'_'+k+'"></block>'; }); });
+return new DOMParser().parseFromString(xml+'</xml>','text/xml').documentElement;
+});
+workspace.registerButtonCallback('CREATE_CB',()=>openCustomBlockDialog());
+workspace.addChangeListener(e=>{ if(e.isUiEvent)return;
+clearTimeout(saveTimer); saveTimer=setTimeout(saveWs,250); });
+sizeExtBtn(); }
+let saveTimer=null;
+function sizeExtBtn(){ if(!workspace)return;
+try{ const tb=workspace.getToolbox(); if(tb&&tb.getWidth)
+$('extBtn').style.width=Math.max(96,tb.getWidth())+'px'; }catch(e){} }
+function saveWs(){ if(current&&workspace)
+current.xml=Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(workspace)); }
+function strToXml(s){ try{return Blockly.utils.xml.textToDom(s);}catch(e){
+try{return new DOMParser().parseFromString(s,'text/xml').documentElement;}catch(_){return null;} } }
+function loadWs(){ if(!workspace)return; workspace.clear();
+if(current&&current.xml){ const d=strToXml(current.xml); if(d) Blockly.Xml.domToWorkspace(d,workspace); } }
+/* ===== РЕНДЕР ===== */
+const stage=$('stage'), spriteLayer=$('spriteLayer'), stagePanel=$('stagePanel');
+const penCanvas=$('penLayer'), penCtx=penCanvas.getContext('2d');
+const imgCache={};
+function cachedImg(src){ let im=imgCache[src]; if(!im){ im=new Image(); im.src=src; imgCache[src]=im; } return im; }
+function renderVars(){ $('varLayer').innerHTML=Object.entries(vars)
+.filter(([k,v])=>v&&v.show!==false)
+.map(([k,v])=>'<div class="var-chip"><span>'+k+'</span><b>'+(v.value??0)+'</b></div>').join(''); }
+function syncProps(){ if(!current)return;
+const u=(id,v)=>{ const el=$(id); if(document.activeElement!==el&&el.value!=v)el.value=v; };
+u('propX',Math.round(current.x)); u('propY',Math.round(current.y));
+u('propSize',Math.round(current.size)); u('propDir',Math.round(current.dir));
+syncRotButtons(); }
+function syncRotButtons(){ document.querySelectorAll('.rot-btn').forEach(b=>
+b.classList.toggle('sel',!!current&&b.dataset.rot===(current.rot||'all'))); }
+function buildAlpha(sp){ const im=new Image();
+im.onload=()=>{ const w=im.naturalWidth,h=im.naturalHeight; sp._aspect=w/h;
+const c=document.createElement('canvas'); const sc=Math.min(1,128/Math.max(w,h));
+c.width=Math.max(1,Math.round(w*sc)); c.height=Math.max(1,Math.round(h*sc));
+const cx=c.getContext('2d',{willReadFrequently:true});
+cx.drawImage(im,0,0,c.width,c.height);
+sp._alpha={w:c.width,h:c.height,data:cx.getImageData(0,0,c.width,c.height).data}; };
+im.src=sp.img; }
+function normDir(d){ return ((d%360)+360)%360; }
+function facingLeft(sp){ return normDir(sp.dir)>180; }
+function spriteTransform(sp){ const s=sp.size/100, rot=(sp.rot||'all');
+if(rot==='all') return 'translate(-50%,-50%) rotate('+(sp.dir-90)+'deg) scale('+s+')';
+if(rot==='leftright') return 'translate(-50%,-50%) scale('+(facingLeft(sp)?-s:s)+','+s+')';
+return 'translate(-50%,-50%) scale('+s+')'; }
+function penTrack(sp){ const p=sp.pen;
+if(!p||!p.down||!sp.visible){ sp._penLast=null; return; }
+const x=240+sp.x, y=180-sp.y;
+if(sp._penLast){ const a=sp._penLast;
+if(a[0]!==x||a[1]!==y) drawPenLine(sp,a[0],a[1],x,y); }
+sp._penLast=[x,y]; }
+function renderSprites(){
+[...spriteLayer.children].forEach(el=>{
+if(el.dataset.bub){ if(!sprites.find(s=>s.id===el.dataset.bub&&s.say)) el.remove(); return; }
+if(!sprites.find(s=>s.id===el.dataset.id)) el.remove(); });
+sprites.forEach((sp,idx)=>{
+let el=spriteLayer.querySelector('.sprite[data-id="'+sp.id+'"]');
+if(!el){ el=document.createElement('div'); el.className='sprite'; el.dataset.id=sp.id;
+el.innerHTML=sp.img?'<img src="'+sp.img+'">':'<span>'+(sp.emoji||'🎨')+'</span>';
+spriteLayer.appendChild(el); }
+if(sp.img){ if(el.firstChild.tagName!=='IMG'||el.firstChild.src!==sp.img)
+el.innerHTML='<img src="'+sp.img+'">';
+el.firstChild.style.imageRendering=sp.pixel?'pixelated':'auto';
+if(sp._alphaUrl!==sp.img){ sp._alphaUrl=sp.img; sp._alpha=null; buildAlpha(sp); } }
+else { if(el.firstChild.tagName!=='SPAN') el.innerHTML='<span>'+(sp.emoji||'🎨')+'</span>';
+else el.firstChild.textContent=sp.emoji||'🎨'; }
+el.style.left=(240+sp.x)+'px'; el.style.top=(180-sp.y)+'px';
+el.style.transform=spriteTransform(sp);
+el.style.zIndex=String(3+idx);
+el.style.display=sp.visible?'':'none';
+el.style.filter=(sp.ghost?'opacity('+(1-sp.ghost/100)+') ':'')+(sp.effect?'hue-rotate('+sp.effect+'deg)':'');
+el.classList.toggle('sel',sp===current);
+penTrack(sp);
+let bb=spriteLayer.querySelector('.bubble[data-bub="'+sp.id+'"]');
+if(sp.say){ if(!bb){ bb=document.createElement('div'); bb.className='bubble'; bb.dataset.bub=sp.id;
+spriteLayer.appendChild(bb); }
+bb.textContent=String(sp.say.text).slice(0,140);
+bb.style.left=(240+sp.x+36*sp.size/100)+'px';
+bb.style.top=(180-sp.y-26*sp.size/100)+'px';
+bb.style.zIndex='7'; } });
+syncProps(); }
+function renderSpritePanel(){
+const list=$('spriteList'); list.innerHTML='';
+sprites.forEach(sp=>{
+const c=document.createElement('div');
+c.className='spr-card'+(sp===current?' sel':'');
+c.innerHTML=(sp.img?'<img src="'+sp.img+'" style="image-rendering:'+(sp.pixel?'pixelated':'auto')+'">'
+:'<div class="em">'+(sp.emoji||'🎨')+'</div>')+
+'<div class="nm">'+sp.name+'</div><button class="spr-del" title="Удалить">✕</button>';
+c.onclick=()=>selectSprite(sp);
+c.ondblclick=()=>renameSprite(sp);
+c.querySelector('.spr-del').onclick=e=>{e.stopPropagation();deleteSprite(sp);};
+list.appendChild(c); });
+const add=document.createElement('div');
+add.className='spr-card spr-add'; add.textContent='+'; add.title='Добавить спрайта';
+add.onclick=()=>openSpriteModal('sprite'); list.appendChild(add); }
+function renderCostumes(){ const list=$('costumeList'); if(!list)return; list.innerHTML='';
+if(!current)return;
+current.costumes.forEach((c,i)=>{
+const el=document.createElement('div');
+el.className='spr-card'+(i===current.costumeIndex?' sel':'');
+el.innerHTML=(c.img?'<img src="'+c.img+'" style="image-rendering:'+(c.pixel?'pixelated':'auto')+'">'
+:'<div class="em">'+(c.emoji||'🎨')+'</div>')+
+'<div class="nm">'+c.name+'</div>'+(current.costumes.length>1?'<button class="spr-del" title="Удалить">✕</button>':'');
+el.onclick=()=>{ current.costumeIndex=i; applyCostume(current); };
+el.ondblclick=()=>renameCostume(i);
+const del=el.querySelector('.spr-del');
+if(del)del.onclick=e=>{e.stopPropagation();deleteCostume(i);};
+list.appendChild(el); }); }
+/* ===== ФОН: единое окно выбора ===== */
+function updateBgBtn(){ const b=[...BG_PRESETS,...customBg].find(x=>x.id===currentBgId);
+const el=$('bgName'); if(el&&b)el.textContent=b.name; }
+function applyBg(id){ const b=[...BG_PRESETS,...customBg].find(x=>x.id===id); if(!b)return;
+stage.style.background=b.img?'url('+b.img+') center/cover':b.css;
+currentBgId=id; updateBgBtn(); }
+function renderBgGrid(){ const g=$('bgGrid'); if(!g)return;
+g.innerHTML=[...BG_PRESETS,...customBg].map(b=>
+'<button class="bg-tile'+(b.id===currentBgId?' sel':'')+'" style="background:'+(b.img?'url('+b.img+') center/cover':b.css)+'" onclick="pickBg(\''+b.id+'\')"><span class="bn">'+b.name+'</span></button>').join(''); }
+function pickBg(id){ applyBg(id); bgModal.classList.remove('open'); toast('Фон применён 🌄'); }
+function openBgModal(){ renderBgGrid(); bgModal.classList.add('open'); }
+function drawNewBg(){ bgModal.classList.remove('open'); bgEditMode=true;
+const ab=$('applyBgBtn'); if(ab)ab.style.display='';
+switchTab('draw'); toast('Нарисуй фон и нажми «🌄 Применить как фон»'); }
+function applyToBg(){ const look=currentLookFromEditor();
+if(!look){ toast('Холст пустой — сначала нарисуй фон 🎨'); return; }
+const b={id:'upbg'+uid(),name:'🎨 Мой '+(customBg.length+1),img:look.img};
+customBg.push(b); applyBg(b.id); bgEditMode=false;
+const ab=$('applyBgBtn'); if(ab)ab.style.display='none';
+switchTab('code'); toast('Новый фон установлен! 🌄'); }
+/* ===== ГРАНИЦЫ ===== */
+function setWalls(mode){
+if(mode==='all'){ walls.top=walls.bottom=walls.left=walls.right=true; }
+else if(mode==='none'){ walls.top=walls.bottom=walls.left=walls.right=false; }
+else if(mode==='leftright'){ walls.left=walls.right=true; walls.top=walls.bottom=false; }
+else if(mode==='topbottom'){ walls.top=walls.bottom=true; walls.left=walls.right=false; }
+renderWalls(); }
+function renderWalls(){
+document.querySelectorAll('.wall-btn').forEach(b=>b.classList.toggle('on',!!walls[b.dataset.wall]));
+stage.classList.toggle('w-top',!!walls.top);
+stage.classList.toggle('w-bottom',!!walls.bottom);
+stage.classList.toggle('w-left',!!walls.left);
+stage.classList.toggle('w-right',!!walls.right); }
+function clampSprite(sp){ const h=28*sp.size/100;
+const minX=walls.left?-240+h:-FAR, maxX=walls.right?240-h:FAR;
+const minY=walls.bottom?-180+h:-FAR, maxY=walls.top?180-h:FAR;
+sp.x=Math.max(minX,Math.min(maxX,sp.x));
+sp.y=Math.max(minY,Math.min(maxY,sp.y)); }
+['propX','propY','propSize','propDir'].forEach(id=>{
+$(id).addEventListener('input',e=>{ if(!current)return;
+const v=num(e.target.value);
+if(id==='propX')current.x=v; if(id==='propY')current.y=v;
+if(id==='propSize')current.size=Math.max(5,v); if(id==='propDir')current.dir=v;
+renderSprites(); }); });
+document.querySelectorAll('.rot-btn').forEach(b=>b.onclick=()=>{ if(!current)return;
+current.rot=b.dataset.rot; renderSprites(); });
+/* ===== СПРАЙТЫ, КОСТЮМЫ, ИМЕНА ===== */
+function makeSprite(o){ const base=Object.assign({id:uid(),name:'Спрайт',emoji:'🐱',img:null,
+x:0,y:0,dir:90,size:100,visible:true,effect:0,ghost:0,say:null,xml:'',px:null,pixel:false,
+isClone:false,rot:'all'},o);
+if(!base.costumes||!base.costumes.length){
+base.costumes=[{name:'костюм 1',emoji:base.emoji||'',img:base.img||null,pixel:!!base.pixel,px:base.px||null}]; }
+base.costumeIndex=Math.min(base.costumeIndex||0,base.costumes.length-1);
+base.phys=Object.assign({on:false,vx:0,vy:0,gravity:10,friction:0,bounce:70,mass:1},base.phys);
+base.pen=Object.assign({down:false,color:'#3b82f6',size:3,opacity:100},base.pen);
+base.rot=base.rot||'all';
+return base; }
+function ensurePhys(sp){ if(!sp.phys) sp.phys={on:false,vx:0,vy:0,gravity:10,friction:0,bounce:70,mass:1};
+return sp.phys; }
+function ensurePen(sp){ if(!sp.pen) sp.pen={down:false,color:'#3b82f6',size:3,opacity:100}; return sp.pen; }
+function applyCostume(sp){ const c=sp.costumes[sp.costumeIndex]||sp.costumes[0]; if(!c)return;
+sp.emoji=c.emoji||''; sp.img=c.img||null; sp.pixel=!!c.pixel; sp.px=c.px||null;
+sp._alphaUrl=null; sp._alpha=null;
+renderSprites(); renderCostumes(); }
+function addCostume(o){ if(!current)return;
+current.costumes.push({name:o.name||('костюм '+(current.costumes.length+1)),
+emoji:o.emoji||'',img:o.img||null,pixel:!!o.pixel,px:o.px||null});
+current.costumeIndex=current.costumes.length-1;
+applyCostume(current); toast('Костюм добавлен 🎭'); }
+function deleteCostume(i){ if(!current||current.costumes.length<=1)return;
+current.costumes.splice(i,1);
+if(current.costumeIndex>=current.costumes.length)current.costumeIndex=current.costumes.length-1;
+applyCostume(current); }
+async function renameSprite(sp){ if(!sp)return;
+const n=await askValue('Новое имя спрайта:',sp.name,'✏️ Спрайт');
+if(n&&n.trim()){ sp.name=n.trim().slice(0,20); renderSpritePanel(); renderCostumes();
+toast('Спрайт переименован ✏️'); } }
+async function renameCostume(i){ if(!current||i==null||!current.costumes[i])return;
+const n=await askValue('Новое имя костюма:',current.costumes[i].name,'🎭 Костюм');
+if(n&&n.trim()){ current.costumes[i].name=n.trim().slice(0,20); renderCostumes();
+toast('Костюм переименован ✏️'); } }
+async function renameProject(){
+const n=await askValue('Название проекта:',projectName,'📄 Проект');
+if(n===null)return; projectName=n.trim()||projectName; updateProjChip();
+toast('Проект переименован ✏️'); }
+function updateProjChip(){ const el=$('projChip'); if(el)el.textContent='📄 '+projectName; }
+function selectSprite(sp){ saveWs(); current=sp; loadWs();
+if(activeTab==='draw') openEditorFor(sp);
+renderSpritePanel(); renderSprites(); renderCostumes(); }
+function addSprite(o){ if(sprites.length>=20){ toast('Максимум 20 спрайтов 😅'); return; }
+const sp=makeSprite(o); sp.name=sp.name||('Спрайт '+(sprites.length+1));
+sprites.push(sp); selectSprite(sp); toast((sp.emoji||'🖼️')+' '+sp.name+' добавлен!'); }
+function deleteSprite(sp){ sprites=sprites.filter(s=>s!==sp);
+if(!sprites.length)sprites.push(makeSprite({emoji:'🐱',name:'Кот'}));
+if(current===sp){ current=sprites[0]; loadWs(); }
+renderSpritePanel(); renderSprites(); renderCostumes(); }
+function drawNewSprite(){ spriteModal.classList.remove('open');
+if(spriteModalMode==='costume'){ switchTab('draw');
+toast('Нарисуй костюм и нажми «🎭 В новый костюм»'); return; }
+addSprite({emoji:'',name:'Мой рисунок'}); switchTab('draw'); }
+function stageXY(e){ const r=stage.getBoundingClientRect();
+return {x:(e.clientX-r.left)*480/r.width-240, y:180-(e.clientY-r.top)*360/r.height}; }
+function spriteHit(sp,x,y){
+const dx=x-sp.x, dy=y-sp.y;
+const ang=-(sp.dir-90)*Math.PI/180;
+const rx=(sp.rot==='all')?(dx*Math.cos(ang)-dy*Math.sin(ang)):dx;
+const ry=(sp.rot==='all')?(dx*Math.sin(ang)+dy*Math.cos(ang)):dy;
+const s=sp.size/100; let lx=rx/s, ly=ry/s;
+if(sp.rot==='leftright'&&facingLeft(sp)) lx=-lx;
+if(sp.img){
+const h=66, w=66*(sp._aspect||1);
+const u=(lx+w/2)/w, v=(ly+h/2)/h;
+if(u<0||v<0||u>1||v>1)return false;
+if(!sp._alpha)return true;
+const A=sp._alpha;
+const ax=Math.min(A.w-1,Math.floor(u*A.w)), ay=Math.min(A.h-1,Math.floor(v*A.h));
+return A.data[(ay*A.w+ax)*4+3]>10; }
+return Math.hypot(lx,ly)<=30; }
+function topSpriteAt(x,y){ for(let i=sprites.length-1;i>=0;i--){
+const sp=sprites[i]; if(sp.visible&&spriteHit(sp,x,y))return sp; } return null; }
+stage.addEventListener('pointerdown',e=>{
+const p=stageXY(e); const sp=topSpriteAt(p.x,p.y); if(!sp)return;
+e.preventDefault();
+const s0=p, ox=sp.x, oy=sp.y; let moved=false;
+const mv=ev=>{ const s=stageXY(ev), dx=s.x-s0.x, dy=s.y-s0.y;
+if(Math.abs(dx)+Math.abs(dy)>4)moved=true;
+if(moved){ sp.x=ox+dx; sp.y=oy+dy; clampSprite(sp); renderSprites(); } };
+const up=()=>{ window.removeEventListener('pointermove',mv); window.removeEventListener('pointerup',up);
+if(!moved) clickSprite(sp); };
+window.addEventListener('pointermove',mv); window.addEventListener('pointerup',up); });
+/* ===== ПЕРО ===== */
+function clearPen(){ penCtx.clearRect(0,0,480,360); sprites.forEach(s=>s._penLast=null); }
+function drawPenLine(sp,x1,y1,x2,y2){ const p=ensurePen(sp); penCtx.save();
+penCtx.globalAlpha=Math.max(0,Math.min(100,p.opacity))/100;
+penCtx.strokeStyle=p.color; penCtx.lineWidth=Math.max(1,p.size);
+penCtx.lineCap='round'; penCtx.lineJoin='round';
+penCtx.beginPath(); penCtx.moveTo(x1,y1); penCtx.lineTo(x2,y2); penCtx.stroke(); penCtx.restore(); }
+function penStamp(sp){ if(!sp.visible)return;
+const x=240+sp.x, y=180-sp.y, s=sp.size/100;
+const rotRad=(sp.rot==='all')?(sp.dir-90)*Math.PI/180:0;
+const flip=(sp.rot==='leftright'&&facingLeft(sp))?-1:1;
+const draw=()=>{ penCtx.save();
+penCtx.globalAlpha=Math.max(0,1-(sp.ghost||0)/100);
+penCtx.translate(x,y); penCtx.rotate(rotRad); penCtx.scale(s*flip,s);
+if(sp.img){ const im=cachedImg(sp.img);
+const h=66, w=66*(sp._aspect||(im.naturalWidth/im.naturalHeight)||1);
+penCtx.drawImage(im,-w/2,-h/2,w,h); }
+else { penCtx.font='54px serif'; penCtx.textAlign='center'; penCtx.textBaseline='middle';
+penCtx.fillText(sp.emoji||'🎨',0,0); }
+penCtx.restore(); };
+if(sp.img){ const im=cachedImg(sp.img); if(im.complete)draw(); else im.onload=draw; } else draw(); }
+function hexToHsl(hex){ const [r,g,b]=hexRgb(hex).map(v=>v/255);
+const mx=Math.max(r,g,b),mn=Math.min(r,g,b); let h=0;
+if(mx!==mn){ const d=mx-mn;
+h= mx===r?((g-b)/d+(g<b?6:0)) : mx===g?((b-r)/d+2) : ((r-g)/d+4); h*=60; }
+return h; }
+function hslToHex(h,s,l){ s/=100;l/=100;
+const k=n=>(n+h/30)%12, a=s*Math.min(l,1-l);
+const f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));
+return '#'+[f(0),f(8),f(4)].map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join(''); }
+function shiftHue(hex,deg){ return hslToHex((hexToHsl(hex)+deg+360)%360,70,55); }
+/* ===== ФИЗИКА ===== */
+function physTick(){
+if(!globalOn) return;
+let moved=false;
+sprites.forEach(sp=>{ const p=sp.phys; if(!p||!p.on)return;
+p.vy-=p.gravity*0.05;
+const air=1-Math.min(.9,p.friction/100*0.2);
+p.vx*=air; p.vy*=air;
+p.vx=Math.max(-60,Math.min(60,p.vx)); p.vy=Math.max(-60,Math.min(60,p.vy));
+sp.x+=p.vx; sp.y+=p.vy;
+const h=28*sp.size/100, e=p.bounce/100;
+if(walls.bottom&&sp.y<-180+h){ sp.y=-180+h;
+if(p.vy<0){ p.vy=-p.vy*e; if(p.vy<0.6)p.vy=0; }
+p.vx*=(1-Math.min(.9,p.friction/100*0.5));
+if(Math.abs(p.vx)<0.05)p.vx=0; }
+else if(!walls.bottom&&sp.y<-FAR){ sp.y=-FAR; p.vy=0; }
+if(walls.top&&sp.y>180-h){ sp.y=180-h; if(p.vy>0)p.vy=-p.vy*e; }
+else if(!walls.top&&sp.y>FAR){ sp.y=FAR; p.vy=0; }
+if(walls.right&&sp.x>240-h){ sp.x=240-h; if(p.vx>0)p.vx=-p.vx*e; }
+else if(!walls.right&&sp.x>FAR){ sp.x=FAR; p.vx=0; }
+if(walls.left&&sp.x<-240+h){ sp.x=-240+h; if(p.vx<0)p.vx=-p.vx*e; }
+else if(!walls.left&&sp.x<-FAR){ sp.x=-FAR; p.vx=0; }
+moved=true; });
+if(moved) renderSprites(); }
+let physStarted=false;
+/* ===== ЗВУК И МУЗЫКА ===== */
+let audioCtx=null;
+const ctx=()=>{ audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+if(audioCtx.state==='suspended')audioCtx.resume(); return audioCtx; };
+function synth(f0,f1,dur,type='sine',vol=.16){ try{ const c=ctx(),o=c.createOscillator(),g=c.createGain();
+o.type=type; o.frequency.setValueAtTime(f0,c.currentTime);
+o.frequency.exponentialRampToValueAtTime(Math.max(f1,1),c.currentTime+dur);
+g.gain.setValueAtTime(vol*(globalVolume/100),c.currentTime);
+g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);
+o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+dur);
+activeOsc.push(o); o.onended=()=>{activeOsc=activeOsc.filter(x=>x!==o)}; }catch(e){} }
+const SYNTHS={ meow:()=>synth(750,320,.35,'sawtooth',.12), bark:()=>synth(220,90,.18,'square',.2),
+laser:()=>synth(1400,120,.25,'sine',.15), drum:()=>synth(160,45,.22,'triangle',.35),
+tada:()=>synth(523,1046,.4,'sine',.15), jump:()=>synth(280,900,.25,'square',.1) };
+const INSTR_WAVE={piano:'triangle',guitar:'sawtooth',flute:'sine',organ:'square',bass:'sine',synth:'square'};
+function noteFreq(n){ return 440*Math.pow(2,(n-69)/12); }
+function playNote(note,secs){ try{ const c=ctx(),o=c.createOscillator(),g=c.createGain();
+o.type=INSTR_WAVE[music.instrument]||'triangle';
+o.frequency.value=noteFreq(Math.max(12,Math.min(120,note)));
+g.gain.setValueAtTime(0,c.currentTime);
+g.gain.linearRampToValueAtTime(.2*(globalVolume/100),c.currentTime+.02);
+g.gain.exponentialRampToValueAtTime(.0008,c.currentTime+Math.max(.08,secs));
+o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+Math.max(.1,secs)+.05);
+activeOsc.push(o); o.onended=()=>{activeOsc=activeOsc.filter(x=>x!==o)}; }catch(e){} }
+function noiseBurst(dur,vol,filterFreq){ try{ const c=ctx();
+const len=Math.max(1,Math.floor(c.sampleRate*dur));
+const buf=c.createBuffer(1,len,c.sampleRate), d=buf.getChannelData(0);
+for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.5);
+const s=c.createBufferSource(), g=c.createGain(); s.buffer=buf;
+g.gain.value=vol*(globalVolume/100);
+if(filterFreq){ const f=c.createBiquadFilter(); f.type='highpass'; f.frequency.value=filterFreq;
+s.connect(f); f.connect(g); } else s.connect(g);
+g.connect(c.destination); s.start(); }catch(e){} }
+function drumSound(kind){
+if(kind==='hat') noiseBurst(.08,.18,7000);
+else if(kind==='clap') noiseBurst(.16,.3,1500);
+else if(kind==='snare'){ noiseBurst(.14,.22,1800); synth(220,160,.12,'triangle',.12); }
+else synth(150,45,.22,'triangle',.35); }
+async function musicNote(note,beats,t){ const secs=Math.max(.08,beats*(60/music.tempo));
+playNote(note,secs); await waitSecs(secs,t); }
+function playSoundById(id){ if(id==='none')return;
+if(id.startsWith('up:')){
+const s=customSounds.find(x=>'up:'+x.id===id); if(!s)return;
+const a=new Audio(s.url); a.volume=globalVolume/100; activeAudios.push(a);
+a.onended=()=>{activeAudios=activeAudios.filter(x=>x!==a)}; a.play().catch(()=>{});
+} else (SYNTHS[id]||(()=>{}))(); }
+function playSoundByIdWait(id){
+if(id==='none')return Promise.resolve();
+if(id.startsWith('up:')){
+return new Promise(resolve=>{
+const s=customSounds.find(x=>'up:'+x.id===id); if(!s){resolve();return;}
+const a=new Audio(s.url); a.volume=globalVolume/100; activeAudios.push(a);
+a.onended=()=>{activeAudios=activeAudios.filter(x=>x!==a);resolve()};
+a.onerror=resolve; a.play().catch(resolve); });
+} else { (SYNTHS[id]||(()=>{}))(); return Promise.resolve(); } }
+function stopSounds(){ activeAudios.forEach(a=>{try{a.pause();a.currentTime=0}catch(e){}}); activeAudios=[];
+activeOsc.forEach(o=>{try{o.stop()}catch(e){}}); activeOsc=[]; }
+function readFile(f){ return new Promise(res=>{ const r=new FileReader();
+r.onload=()=>res(r.result); r.readAsDataURL(f); }); }
+$('fileSprite').onchange=async e=>{ const f=e.target.files[0]; if(!f)return;
+const img=await readFile(f), name=f.name.replace(/\.[^.]+$/,'').slice(0,14)||'Мой спрайт';
+if(spriteModalMode==='costume') addCostume({img,name});
+else addSprite({img,name});
+spriteModal.classList.remove('open'); e.target.value=''; };
+$('fileSound').onchange=async e=>{ const f=e.target.files[0]; if(!f)return;
+customSounds.push({id:uid(),name:'🎵 '+f.name.replace(/\.[^.]+$/,'').slice(0,12),url:await readFile(f)});
+toast('Звук загружен! Ищи его в блоке «играть звук» 🎶'); e.target.value=''; };
+$('fileBg').onchange=async e=>{ const f=e.target.files[0]; if(!f)return;
+const b={id:'upbg'+uid(),name:'🖼️ '+f.name.slice(0,10),img:await readFile(f)};
+customBg.push(b); applyBg(b.id); renderBgGrid(); toast('Фон загружен! 🖼️'); e.target.value=''; };
+/* ===== ДОПОЛНЕНИЯ (✳️) ===== */
+function openExtModal(){ updateExtCards(); extModal.classList.add('open'); }
+function updateExtCards(){
+const m=$('extCardMusic'), p=$('extCardPen');
+m.classList.toggle('done',enabledExt.music);
+p.classList.toggle('done',enabledExt.pen);
+const om=m.querySelector('.ext-done'), op=p.querySelector('.ext-done');
+if(om)om.remove(); if(op)op.remove();
+if(enabledExt.music) m.insertAdjacentHTML('beforeend','<span class="ext-done">✓ добавлено</span>');
+if(enabledExt.pen) p.insertAdjacentHTML('beforeend','<span class="ext-done">✓ добавлено</span>'); }
+function enableExt(kind){
+if(enabledExt[kind]){ toast('Дополнение уже добавлено ✅'); return; }
+enabledExt[kind]=true; refreshToolbox(); updateExtCards(); sizeExtBtn();
+extModal.classList.remove('open');
+toast(kind==='music'?'Дополнение «Музыка» добавлено! 🎵':'Дополнение «Перо» добавлено! ✏️'); }
+/* ===== ДВИЖОК ===== */
+const kids=b=>[...b.children];
+const field=(b,n)=>{ const f=kids(b).find(c=>c.tagName==='field'&&c.getAttribute('name')===n);
+return f?f.textContent:''; };
+const valBlock=(b,n)=>{ const v=kids(b).find(c=>c.tagName==='value'&&c.getAttribute('name')===n);
+if(!v)return null; return v.querySelector('block')||v.querySelector('shadow'); };
+const nextBlock=b=>{ const nx=kids(b).find(c=>c.tagName==='next');
+return nx?nx.querySelector('block'):null; };
+const stmtBlock=(b,n)=>{ const s=kids(b).find(c=>c.tagName==='statement'&&c.getAttribute('name')===n);
+return s?s.querySelector('block'):null; };
+const num=v=>{ const x=parseFloat(v); return isNaN(x)?0:x; };
+function truthy(v){ if(typeof v==='boolean')return v; if(typeof v==='number')return v!==0;
+const s=String(v).toLowerCase(); return s!==''&&s!=='ложь'&&s!=='false'&&s!=='0'; }
+function getList(name){ if(!lists[name])lists[name]=[]; return lists[name]; }
+function spriteRadius(sp){ if(sp.img){ const h=66*sp.size/100; return Math.max(h,h*(sp._aspect||1))/2; }
+return 28*sp.size/100; }
+function spritesTouch(a,b){ if(a===b)return false;
+return Math.hypot(a.x-b.x,a.y-b.y)<=(spriteRadius(a)+spriteRadius(b))*0.85; }
+function edgeFlags(sp){ const h=28*sp.size/100;
+return {top:sp.y>180-h,bottom:sp.y<-180+h,left:sp.x<-240+h,right:sp.x>240-h}; }
+function evalVal(b,sp){ if(!b)return 0; const t=b.getAttribute('type');
+if(t&&t.startsWith('cb_arg_')){ const rest=t.slice(7); const ui=rest.lastIndexOf('_');
+const id=rest.slice(0,ui), k=+rest.slice(ui+1);
+const cb=customBlocks.find(c=>c.id===id); if(!cb)return 0;
+const part=cbParams(cb)[k]; if(!part)return 0;
+const fr=(curThread&&curThread.frames&&curThread.frames.length)?
+curThread.frames[curThread.frames.length-1]:null;
+return fr?(fr[part.name]??0):0; }
+switch(t){
+case 'math_number': return num(field(b,'NUM'));
+case 'text': return field(b,'TEXT');
+case 'logic_boolean': return field(b,'BOOL')==='TRUE';
+case 'math_arith':{ const a=num(evalVal(valBlock(b,'A'),sp)),c=num(evalVal(valBlock(b,'B'),sp));
+switch(field(b,'OP')){case 'ADD':return a+c;case 'MINUS':return a-c;
+case 'MULTIPLY':return a*c;case 'DIVIDE':return c===0?0:a/c;} }
+case 'random':{ const a=num(evalVal(valBlock(b,'A'),sp)),c=num(evalVal(valBlock(b,'B'),sp));
+const lo=Math.min(a,c),hi=Math.max(a,c);
+return Number.isInteger(a)&&Number.isInteger(c)
+? lo+Math.floor(Math.random()*(hi-lo+1)) : lo+Math.random()*(hi-lo); }
+case 'compare':{ const av=evalVal(valBlock(b,'A'),sp),bv=evalVal(valBlock(b,'B'),sp);
+const bothNum=typeof av==='number'&&typeof bv==='number';
+const x=bothNum?av:String(av), y=bothNum?bv:String(bv);
+switch(field(b,'OP')){case 'GT':return x>y;case 'LT':return x<y;default:return x==y;} }
+case 'logic_and': return truthy(evalVal(valBlock(b,'A'),sp))&&truthy(evalVal(valBlock(b,'B'),sp));
+case 'logic_or': return truthy(evalVal(valBlock(b,'A'),sp))||truthy(evalVal(valBlock(b,'B'),sp));
+case 'logic_not': return !truthy(evalVal(valBlock(b,'VALUE'),sp));
+case 'join': return String(evalVal(valBlock(b,'A'),sp))+String(evalVal(valBlock(b,'B'),sp));
+case 'letter_of':{ const idx=num(evalVal(valBlock(b,'INDEX'),sp));
+const txt=String(evalVal(valBlock(b,'TEXT'),sp)); return txt[idx-1]||''; }
+case 'string_length': return String(evalVal(valBlock(b,'TEXT'),sp)).length;
+case 'mod':{ const a=num(evalVal(valBlock(b,'A'),sp)),c=num(evalVal(valBlock(b,'B'),sp));
+return c===0?0:a%c; }
+case 'round': return Math.round(num(evalVal(valBlock(b,'NUM'),sp)));
+case 'math_func':{ const n=num(evalVal(valBlock(b,'NUM'),sp));
+switch(field(b,'FUNC')){case 'SQRT':return Math.sqrt(n);case 'ABS':return Math.abs(n);
+case 'FLOOR':return Math.floor(n);case 'CEIL':return Math.ceil(n);} }
+case 'math_pow':{ const a=num(evalVal(valBlock(b,'A'),sp)),c=num(evalVal(valBlock(b,'B'),sp));
+return Math.pow(a,c); }
+case 'math_trig':{ const n=num(evalVal(valBlock(b,'NUM'),sp))*Math.PI/180;
+switch(field(b,'FUNC')){case 'SIN':return Math.round(Math.sin(n)*1e6)/1e6;
+case 'COS':return Math.round(Math.cos(n)*1e6)/1e6;
+case 'TAN':return Math.round(Math.tan(n)*1e6)/1e6;} }
+case 'math_minmax':{ const a=num(evalVal(valBlock(b,'A'),sp)),c=num(evalVal(valBlock(b,'B'),sp));
+return field(b,'OP')==='MAX'?Math.max(a,c):Math.min(a,c); }
+case 'to_number': return num(evalVal(valBlock(b,'VALUE'),sp));
+case 'contains':{ const a=String(evalVal(valBlock(b,'A'),sp)),c=String(evalVal(valBlock(b,'B'),sp));
+return c!==''&&a.indexOf(c)>=0; }
+case 'string_case':{ const s=String(evalVal(valBlock(b,'TEXT'),sp));
+return field(b,'CASE')==='UPPER'?s.toUpperCase():s.toLowerCase(); }
+case 'string_replace':{ const s=String(evalVal(valBlock(b,'TEXT'),sp));
+const f=String(evalVal(valBlock(b,'FIND'),sp));
+const to=String(evalVal(valBlock(b,'TO'),sp));
+return f===''?s:s.split(f).join(to); }
+case 'list_get':{ const L=getList(field(b,'LIST'));
+const i=Math.round(num(evalVal(valBlock(b,'INDEX'),sp)));
+return (i>=1&&i<=L.length)?L[i-1]:''; }
+case 'list_length': return getList(field(b,'LIST')).length;
+case 'list_contains':{ const L=getList(field(b,'LIST'));
+const v=String(evalVal(valBlock(b,'ITEM'),sp)); return L.some(x=>String(x)===v); }
+case 'list_index':{ const L=getList(field(b,'LIST'));
+const v=String(evalVal(valBlock(b,'ITEM'),sp)); return L.findIndex(x=>String(x)===v)+1; }
+case 'clone_count': return sprites.filter(s=>s.isClone).length;
+case 'tempo': return music.tempo;
+case 'variables_get':{ const v=vars[field(b,'VAR')]; return v?(v.value??0):0; }
+case 'x_pos': return Math.round(sp.x);
+case 'y_pos': return Math.round(sp.y);
+case 'direction': return Math.round(sp.dir);
+case 'vel_x': return Math.round((sp.phys?sp.phys.vx:0)*10)/10;
+case 'vel_y': return Math.round((sp.phys?sp.phys.vy:0)*10)/10;
+case 'speed': return Math.round(Math.hypot(sp.phys?sp.phys.vx:0,sp.phys?sp.phys.vy:0)*10)/10;
+case 'on_ground':{ const h=28*sp.size/100; return walls.bottom&&sp.y<=-180+h+1; }
+case 'mouse_x': return mousePos.x;
+case 'mouse_y': return mousePos.y;
+case 'mouse_down': return mouseDown;
+case 'key_pressed': return keysDown.has(field(b,'KEY'));
+case 'touching_edge':{ const f=edgeFlags(sp);
+if(!walls.top&&!walls.bottom&&!walls.left&&!walls.right) return f.top||f.bottom||f.left||f.right;
+return (walls.top&&f.top)||(walls.bottom&&f.bottom)||(walls.left&&f.left)||(walls.right&&f.right); }
+case 'touching_wall':{ const f=edgeFlags(sp), s=field(b,'SIDE');
+if(s==='any') return Object.keys(f).some(k=>walls[k]&&f[k]);
+return !!walls[s]&&!!f[s]; }
+case 'wall_on': return !!walls[field(b,'SIDE')];
+case 'touching_sprite':{ const sid=field(b,'TARGET');
+if(sid==='myself')return false;
+const o=sprites.find(s=>s.id===sid); return o?spritesTouch(sp,o):false; }
+case 'touching_mouse':{ const h=28*sp.size/100;
+return Math.hypot(mousePos.x-sp.x,mousePos.y-sp.y)<h; }
+case 'distance_to': return Math.round(Math.hypot(mousePos.x-sp.x,mousePos.y-sp.y));
+case 'answer': return lastAnswer;
+case 'timer': return Math.round((Date.now()-timerStart)/100)/10;
+case 'current_date':{ const d=new Date();
+switch(field(b,'DATE')){case 'year':return String(d.getFullYear());
+case 'month':return String(d.getMonth()+1);case 'day':return String(d.getDate());
+case 'hour':return String(d.getHours());case 'minute':return String(d.getMinutes());
+case 'second':return String(d.getSeconds());} }
+case 'volume': return globalVolume; }
+return 0; }
+const eNum=(b,n,sp,d=0)=>{ const vb=valBlock(b,n); return vb?num(evalVal(vb,sp)):d; };
+const eStr=(b,n,sp,d='')=>{ const vb=valBlock(b,n); return vb?String(evalVal(vb,sp)):d; };
+async function waitSecs(s,t){ let ms=Math.max(0,s)*1000;
+while(ms>0&&t.on&&globalOn){ const d=Math.min(50,ms); await sleep(d); ms-=d; } }
+const step=async t=>{ if(!(t&&t.fast)) await sleep(30); };
+async function execBlock(b,sp,t){
+const btype=b.getAttribute('type');
+if(btype&&btype.startsWith('cb_call_')){
+const id=btype.slice(8);
+const cb=customBlocks.find(c=>c.id===id); if(!cb) return;
+const frame={}; let ai=0;
+cb.parts.forEach(p=>{ if(p.kind!=='label'){ frame[p.name]=evalVal(valBlock(b,'ARG'+ai),sp); ai++; } });
+const def=findDefBody(id);
+if(!def){ toast('Нет определения блока «'+cb.name+'» — добавь шапку «определить …» 😿'); return; }
+t.frames=t.frames||[]; t.frames.push(frame);
+const pf=t.fast; if(cb.noRefresh) t.fast=true;
+await runChain(def,sp,t);
+t.fast=pf; t.frames.pop(); return; }
+switch(btype){
+case 'move_steps':{ const s=eNum(b,'STEPS',sp),r=(sp.dir-90)*Math.PI/180;
+sp.x+=Math.cos(r)*s; sp.y-=Math.sin(r)*s; clampSprite(sp); renderSprites(); await step(t); break; }
+case 'turn_r': sp.dir+=eNum(b,'DEGREES',sp); renderSprites(); await step(t); break;
+case 'turn_l': sp.dir-=eNum(b,'DEGREES',sp); renderSprites(); await step(t); break;
+case 'point_towards_mouse':{ const dx=mousePos.x-sp.x,dy=mousePos.y-sp.y;
+sp.dir=Math.atan2(-dy,dx)*180/Math.PI+90; renderSprites(); await step(t); break; }
+case 'goto_xy': sp.x=eNum(b,'X',sp); sp.y=eNum(b,'Y',sp); clampSprite(sp); renderSprites(); await step(t); break;
+case 'goto_random': sp.x=Math.round(Math.random()*440-220);
+sp.y=Math.round(Math.random()*320-160); renderSprites(); await step(t); break;
+case 'goto_mouse': sp.x=mousePos.x; sp.y=mousePos.y; clampSprite(sp); renderSprites(); await step(t); break;
+case 'glide':{ const secs=Math.max(.05,eNum(b,'SECS',sp,1)),tx=eNum(b,'X',sp),ty=eNum(b,'Y',sp);
+const steps=Math.max(1,Math.round(secs*1000/30)),dx=(tx-sp.x)/steps,dy=(ty-sp.y)/steps;
+for(let i=0;i<steps&&t.on&&globalOn;i++){ sp.x+=dx; sp.y+=dy; renderSprites(); await sleep(30);}
+sp.x=tx; sp.y=ty; renderSprites(); break; }
+case 'glide_mouse':{ const secs=Math.max(.05,eNum(b,'SECS',sp,1));
+const steps=Math.max(1,Math.round(secs*1000/30)),dx=(mousePos.x-sp.x)/steps,dy=(mousePos.y-sp.y)/steps;
+for(let i=0;i<steps&&t.on&&globalOn;i++){ sp.x+=dx; sp.y+=dy; renderSprites(); await sleep(30);}
+sp.x=mousePos.x; sp.y=mousePos.y; renderSprites(); break; }
+case 'point_dir': sp.dir=eNum(b,'DIR',sp,90); renderSprites(); await step(t); break;
+case 'change_x': sp.x+=eNum(b,'DX',sp); clampSprite(sp); renderSprites(); await step(t); break;
+case 'change_y': sp.y+=eNum(b,'DY',sp); clampSprite(sp); renderSprites(); await step(t); break;
+case 'set_x': sp.x=eNum(b,'X',sp); clampSprite(sp); renderSprites(); break;
+case 'set_y': sp.y=eNum(b,'Y',sp); clampSprite(sp); renderSprites(); break;
+case 'bounce':{ const f=edgeFlags(sp);
+if(walls.right&&f.right){sp.x=240-28*sp.size/100;sp.dir=-sp.dir;}
+if(walls.left&&f.left){sp.x=-240+28*sp.size/100;sp.dir=-sp.dir;}
+if(walls.top&&f.top){sp.y=180-28*sp.size/100;sp.dir=180-sp.dir;}
+if(walls.bottom&&f.bottom){sp.y=-180+28*sp.size/100;sp.dir=180-sp.dir;}
+renderSprites(); break; }
+case 'set_walls': setWalls(field(b,'MODE')); break;
+case 'set_rot_style': sp.rot=field(b,'STYLE'); renderSprites(); break;
+case 'go_to_front':{ sprites=sprites.filter(s=>s!==sp); sprites.push(sp); renderSprites(); break; }
+case 'go_to_back':{ sprites=sprites.filter(s=>s!==sp); sprites.unshift(sp); renderSprites(); break; }
+case 'phys_on': ensurePhys(sp).on=true; break;
+case 'phys_off':{ const p=ensurePhys(sp); p.on=false; p.vx=0; p.vy=0; break; }
+case 'set_gravity': ensurePhys(sp).gravity=eNum(b,'G',sp,10); break;
+case 'set_bounce': ensurePhys(sp).bounce=Math.max(0,Math.min(100,eNum(b,'B',sp,70))); break;
+case 'set_friction': ensurePhys(sp).friction=Math.max(0,Math.min(100,eNum(b,'F',sp,20))); break;
+case 'set_mass': ensurePhys(sp).mass=Math.max(0.1,eNum(b,'M',sp,1)); break;
+case 'set_vel':{ const p=ensurePhys(sp); p.vx=eNum(b,'VX',sp); p.vy=eNum(b,'VY',sp); break; }
+case 'add_force':{ const p=ensurePhys(sp); const f=eNum(b,'FORCE',sp,10),dir=eNum(b,'DIR',sp,0);
+const r=(dir-90)*Math.PI/180;
+p.vx+=Math.cos(r)*f/p.mass; p.vy-=Math.sin(r)*f/p.mass; break; }
+case 'jump':{ const p=ensurePhys(sp); p.vy+=eNum(b,'F',sp,12)/p.mass; break; }
+case 'phys_stop':{ const p=ensurePhys(sp); p.vx=0; p.vy=0; break; }
+case 'say_for':{ const txt=eStr(b,'TEXT',sp,'Привет!'),secs=eNum(b,'SECS',sp,2),tag=uid();
+sp.say={text:txt,tag}; renderSprites(); await waitSecs(secs,t);
+if(sp.say&&sp.say.tag===tag){sp.say=null;renderSprites();} break; }
+case 'say': sp.say={text:eStr(b,'TEXT',sp,'Привет!'),tag:uid()}; renderSprites(); break;
+case 'think_for':{ const txt=eStr(b,'TEXT',sp,'Хм...'),secs=eNum(b,'SECS',sp,2),tag=uid();
+sp.say={text:txt+' 💭',tag}; renderSprites(); await waitSecs(secs,t);
+if(sp.say&&sp.say.tag===tag){sp.say=null;renderSprites();} break; }
+case 'think': sp.say={text:eStr(b,'TEXT',sp,'Хм...')+' 💭',tag:uid()}; renderSprites(); break;
+case 'next_costume': if(sp.costumes.length){
+sp.costumeIndex=(sp.costumeIndex+1)%sp.costumes.length; applyCostume(sp); }
+renderSprites(); await step(t); break;
+case 'set_costume':{ const nm=field(b,'NAME');
+let i=sp.costumes.findIndex(c=>c.name===nm);
+if(i<0&&!isNaN(parseInt(nm)))i=parseInt(nm);
+if(i>=0&&i<sp.costumes.length){ sp.costumeIndex=i; applyCostume(sp); }
+await step(t); break; }
+case 'show': sp.visible=true; renderSprites(); break;
+case 'hide': sp.visible=false; renderSprites(); break;
+case 'change_size': sp.size=Math.max(5,sp.size+eNum(b,'DS',sp)); renderSprites(); await step(t); break;
+case 'set_size': sp.size=Math.max(5,eNum(b,'SIZE',sp,100)); renderSprites(); break;
+case 'change_effect': sp.effect=((sp.effect+eNum(b,'DE',sp))%360+360)%360; renderSprites(); await step(t); break;
+case 'set_effect': sp.effect=eNum(b,'DE',sp)%360; renderSprites(); break;
+case 'change_ghost': sp.ghost=Math.max(0,Math.min(100,sp.ghost+eNum(b,'GH',sp))); renderSprites(); await step(t); break;
+case 'clear_effects': sp.effect=0; sp.ghost=0; renderSprites(); break;
+case 'set_bg': applyBg(field(b,'BG')); await step(t); break;
+case 'play_sound': playSoundById(field(b,'SOUND')); await sleep(80); break;
+case 'play_sound_wait': await playSoundByIdWait(field(b,'SOUND')); break;
+case 'stop_sounds': stopSounds(); break;
+case 'change_volume': globalVolume=Math.max(0,Math.min(100,globalVolume+eNum(b,'DV',sp)));
+$('setVol').value=globalVolume; $('volLbl').textContent=globalVolume+'%'; break;
+case 'set_volume': globalVolume=Math.max(0,Math.min(100,eNum(b,'VOL',sp,100)));
+$('setVol').value=globalVolume; $('volLbl').textContent=globalVolume+'%'; break;
+case 'play_note': await musicNote(eNum(b,'NOTE',sp,60),eNum(b,'BEATS',sp,.5),t); break;
+case 'set_instrument': music.instrument=field(b,'INSTR'); break;
+case 'play_drum': drumSound(field(b,'DRUM')); await sleep(60); break;
+case 'set_tempo': music.tempo=Math.max(20,Math.min(300,eNum(b,'T',sp,60)));
+$('setTempo').value=music.tempo; break;
+case 'change_tempo': music.tempo=Math.max(20,Math.min(300,music.tempo+eNum(b,'T',sp,20)));
+$('setTempo').value=music.tempo; break;
+case 'rest_note': await waitSecs(Math.max(.05,eNum(b,'BEATS',sp,.5))*(60/music.tempo),t); break;
+case 'pen_down': ensurePen(sp).down=true; sp._penLast=null; renderSprites(); break;
+case 'pen_up': ensurePen(sp).down=false; sp._penLast=null; break;
+case 'pen_clear': clearPen(); break;
+case 'set_pen_color': ensurePen(sp).color=field(b,'COLOR'); break;
+case 'change_pen_color':{ const p=ensurePen(sp); p.color=shiftHue(p.color,eNum(b,'HUE',sp,10)); break; }
+case 'set_pen_size': ensurePen(sp).size=Math.max(1,eNum(b,'S',sp,3)); break;
+case 'change_pen_size':{ const p=ensurePen(sp); p.size=Math.max(1,p.size+eNum(b,'S',sp,1)); break; }
+case 'set_pen_opacity': ensurePen(sp).opacity=Math.max(0,Math.min(100,eNum(b,'O',sp,100))); break;
+case 'pen_stamp': penStamp(sp); await step(t); break;
+case 'wait': await waitSecs(eNum(b,'SECS',sp,1),t); break;
+case 'repeat':{ const n=Math.floor(eNum(b,'TIMES',sp,10)),st=stmtBlock(b,'DO');
+for(let i=0;i<n&&t.on&&globalOn;i++) await runChain(st,sp,t); break; }
+case 'for_loop':{ const vn=field(b,'VAR');
+const from=num(evalVal(valBlock(b,'FROM'),sp)), to=num(evalVal(valBlock(b,'TO'),sp));
+const stp=from<=to?1:-1;
+if(!vars[vn])vars[vn]={value:0,show:true};
+for(let i=from;(stp>0?i<=to:i>=to)&&t.on&&globalOn;i+=stp){
+vars[vn].value=i; renderVars(); await runChain(stmtBlock(b,'DO'),sp,t); }
+break; }
+case 'forever':{ const st=stmtBlock(b,'DO');
+while(t.on&&globalOn){ if(st) await runChain(st,sp,t); else await sleep(20); await sleep(5);} break; }
+case 'if_then': if(truthy(evalVal(valBlock(b,'COND'),sp))) await runChain(stmtBlock(b,'DO'),sp,t); break;
+case 'if_else': if(truthy(evalVal(valBlock(b,'COND'),sp))) await runChain(stmtBlock(b,'DO'),sp,t);
+else await runChain(stmtBlock(b,'ELSE'),sp,t); break;
+case 'repeat_until':{ const cb=valBlock(b,'COND'),st=stmtBlock(b,'DO');
+while(t.on&&globalOn&&!truthy(evalVal(cb,sp))){ if(st) await runChain(st,sp,t); else await sleep(20); await sleep(5);} break; }
+case 'wait_until':{ const cb=valBlock(b,'COND');
+while(t.on&&globalOn&&!truthy(evalVal(cb,sp))) await sleep(50); break; }
+case 'stop_all': stopEverything(); break;
+case 'stop_this': t.on=false; break;
+case 'create_clone':{ const sid=field(b,'SPRITE');
+const src=sid==='myself'?sp:sprites.find(s=>s.id===sid);
+if(src&&sprites.length<20){ const clone=makeSprite(Object.assign({},src,{id:uid(),isClone:true,name:src.name+' (клон)'}));
+clone.costumes=src.costumes; clone.costumeIndex=src.costumeIndex;
+clone.phys=Object.assign({},src.phys); clone.pen=Object.assign({},src.pen,{down:false});
+sprites.push(clone); renderSpritePanel(); renderSprites();
+triggerCloneHats(clone); } break; }
+case 'delete_clone': if(sp.isClone){ sprites=sprites.filter(s=>s!==sp);
+renderSpritePanel(); renderSprites(); t.on=false; } break;
+case 'variables_set':{ const n=field(b,'VAR');
+if(!vars[n])vars[n]={value:0,show:true};
+vars[n].value=evalVal(valBlock(b,'VALUE'),sp); renderVars(); break; }
+case 'variables_change':{ const n=field(b,'VAR');
+if(!vars[n])vars[n]={value:0,show:true};
+vars[n].value=num(vars[n].value)+num(evalVal(valBlock(b,'VALUE'),sp)); renderVars(); break; }
+case 'show_variable':{ const n=field(b,'VAR');
+if(!vars[n])vars[n]={value:0,show:true}; else vars[n].show=true;
+renderVars(); break; }
+case 'hide_variable':{ const n=field(b,'VAR');
+if(vars[n])vars[n].show=false; renderVars(); break; }
+case 'list_add': getList(field(b,'LIST')).push(evalVal(valBlock(b,'ITEM'),sp)); break;
+case 'list_insert':{ const L=getList(field(b,'LIST'));
+let i=Math.round(num(evalVal(valBlock(b,'INDEX'),sp)))-1;
+i=Math.max(0,Math.min(L.length,i));
+L.splice(i,0,evalVal(valBlock(b,'ITEM'),sp)); break; }
+case 'list_replace':{ const L=getList(field(b,'LIST'));
+const i=Math.round(num(evalVal(valBlock(b,'INDEX'),sp)))-1;
+if(i>=0&&i<L.length) L[i]=evalVal(valBlock(b,'ITEM'),sp); break; }
+case 'list_delete':{ const L=getList(field(b,'LIST'));
+const i=Math.round(num(evalVal(valBlock(b,'INDEX'),sp)))-1;
+if(i>=0&&i<L.length) L.splice(i,1); break; }
+case 'list_clear': lists[field(b,'LIST')]=[]; break;
+case 'broadcast': triggerBroadcasts(field(b,'MSG')); break;
+case 'broadcast_wait':{ const promises=[]; triggerBroadcasts(field(b,'MSG'),promises);
+await Promise.all(promises); break; }
+case 'ask_wait': lastAnswer=await askStage(eStr(b,'TEXT',sp,'Как тебя зовут?'),t); break;
+case 'reset_timer': timerStart=Date.now(); break; } }
+async function askStage(text,t){
+return await new Promise(res=>{ let done=false;
+const finish=v=>{ if(done)return; done=true; res(v); };
+openCustomPrompt(text,'',v=>finish(v==null?'':v),'💬 Вопрос');
+const chk=setInterval(()=>{ if((t&&!t.on)||!globalOn){ clearInterval(chk);
+if(promptModal.classList.contains('open'))promptModal.classList.remove('open');
+promptCb=null; finish(''); } },100); }); }
+async function runChain(b,sp,t){ const prev=curThread; curThread=t; let c=b;
+while(c&&t.on&&globalOn){ await execBlock(c,sp,t); c=nextBlock(c); }
+curThread=prev; }
+function startThread(sp,firstBlock){ if(!firstBlock)return;
+const t={on:true}; threads.push(t);
+(async()=>{ try{ await runChain(firstBlock,sp,t); }catch(e){ console.error(e); toast('Ой, ошибка в скрипте 😿'); }
+t.on=false; })(); }
+function forEachHat(fn){ saveWs();
+sprites.forEach(sp=>{ if(!sp.xml)return; const dom=strToXml(sp.xml); if(!dom)return;
+kids(dom).forEach(b=>{ if(b.tagName==='block') fn(b,sp); }); }); }
+function triggerHats(pred){ if(!globalOn){ toast('Сначала нажми 🏁, чтобы проект заработал'); return; }
+forEachHat((b,sp)=>{ if(pred(b,sp))
+startThread(sp,b.querySelector('next > block')); }); }
+function triggerCloneHats(clone){ forEachHat((b,sp)=>{
+if(sp===clone&&b.getAttribute('type')==='when_clone')
+startThread(clone,b.querySelector('next > block')); }); }
+function triggerBroadcasts(msg,promises=[]){ forEachHat((b,sp)=>{
+if(b.getAttribute('type')==='ev_broadcast'&&field(b,'MSG')===msg){
+const t={on:true}; threads.push(t);
+const p=(async()=>{ try{ await runChain(b.querySelector('next > block'),sp,t); }catch(e){ console.error(e); }
+t.on=false; })();
+promises.push(p); } }); }
+function runProject(){ ctx(); stopEverything(); globalOn=true; timerStart=Date.now();
+$('flagBtn').classList.add('run');
+forEachHat((b,sp)=>{ if(b.getAttribute('type')==='ev_flag')
+startThread(sp,b.querySelector('next > block')); }); }
+function stopEverything(){ globalOn=false; threads.forEach(t=>t.on=false); threads=[];
+stopSounds();
+sprites.forEach(s=>{ s.say=null; s._penLast=null;
+if(s.phys){ s.phys.vx=0; s.phys.vy=0; } });
+keysDown.clear();
+if(promptModal.classList.contains('open')){ promptModal.classList.remove('open');
+const cb=promptCb; promptCb=null; if(cb)cb(null); }
+if(sprites.some(s=>s.isClone)){
+sprites=sprites.filter(s=>!s.isClone);
+if(!sprites.length) sprites.push(makeSprite({emoji:'🐱',name:'Кот'}));
+if(!sprites.includes(current)){ current=sprites[0]; loadWs(); }
+renderSpritePanel(); renderCostumes(); }
+renderSprites();
+$('flagBtn').classList.remove('run'); }
+function clickSprite(sp){ if(!globalOn) return;
+saveWs(); const dom=strToXml(sp.xml||''); if(!dom)return;
+kids(dom).forEach(b=>{ if(b.tagName==='block'&&b.getAttribute('type')==='ev_click')
+startThread(sp,b.querySelector('next > block')); }); }
+/* ===== КЛАВИАТУРА ===== */
+const KEY_MAP={' ':'space','Spacebar':'space','ArrowUp':'arrowup','ArrowDown':'arrowdown',
+'ArrowLeft':'arrowleft','ArrowRight':'arrowright','Enter':'enter','Tab':'tab','Shift':'shift',
+'Control':'ctrl','Alt':'alt','Backspace':'backspace','Delete':'delete','Escape':'escape'};
+function keyCode(e){ if(KEY_MAP[e.key])return KEY_MAP[e.key];
+return e.key.toLowerCase(); }
+window.addEventListener('keydown',e=>{
+if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
+if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&activeTab==='draw'){ e.preventDefault(); edUndo(); return; }
+if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){ e.preventDefault(); saveProject(); return; }
+const k=keyCode(e);
+if(['arrowup','arrowdown','arrowleft','arrowright','space','tab'].indexOf(k)>=0)e.preventDefault();
+if(e.repeat)return;
+keysDown.add(k);
+triggerHats(b=>b.getAttribute('type')==='ev_key'&&
+(field(b,'KEY')===k||field(b,'KEY')==='any')); });
+window.addEventListener('keyup',e=>{ keysDown.delete(keyCode(e)); });
+window.addEventListener('blur',()=>keysDown.clear());
+window.addEventListener('pointerdown',()=>{mouseDown=true;ctx();});
+window.addEventListener('pointerup',()=>mouseDown=false);
+stage.addEventListener('mousemove',e=>{ const p=stageXY(e);
+mousePos.x=Math.round(p.x); mousePos.y=Math.round(p.y);
+$('coordChip').textContent='x: '+mousePos.x+' y: '+mousePos.y; });
+/* ===== РЕДАКТОР ===== */
+const edCanvas=$('edCanvas'), edCtx=edCanvas.getContext('2d',{willReadFrequently:true});
+const ed={mode:'normal',tool:'brush',color:'#7c3aed',size:8,pxN:24,px:null,zoom:1,
+drawing:false,last:null,snap:null,down:false,lastCell:null,undoN:[],undoPx:[]};
+const PALETTE=['#1e293b','#7c3aed','#3b82f6','#06b6d4','#22c55e','#eab308',
+'#f97316','#ef4444','#ec4899','#a16207','#94a3b8','#ffffff'];
+function setEdZoom(z){ ed.zoom=Math.min(6,Math.max(.4,z));
+edCanvas.style.width=(480*ed.zoom)+'px'; edCanvas.style.height=(360*ed.zoom)+'px';
+const l=$('edZoomLbl'); if(l)l.textContent=Math.round(ed.zoom*100)+'%'; }
+edCanvas.addEventListener('wheel',e=>{ if(!e.ctrlKey)return; e.preventDefault();
+setEdZoom(ed.zoom*(e.deltaY<0?1.2:1/1.2)); },{passive:false});
+function buildEditorUI(){
+$('swatches').innerHTML=PALETTE.map(c=>
+'<div class="swatch" style="background:'+c+'" onclick="setEdColor(\''+c+'\')"></div>').join('');
+$('edColor').value=ed.color;
+document.querySelectorAll('.ed-btn.mode').forEach(b=>b.onclick=()=>setEdMode(b.dataset.mode));
+document.querySelectorAll('.ed-btn.tool').forEach(b=>b.onclick=()=>setEdTool(b.dataset.tool));
+$('pxSize').onchange=()=>{ const n=+$('pxSize').value;
+if(ed.px&&ed.px.cells.some(c=>c)&&n!==ed.px.n&&!confirm('Сменить сетку? Текущий пиксель-арт очистится.'))
+{ $('pxSize').value=ed.px.n; return; }
+ed.pxN=n; ed.px={n,cells:Array(n*n).fill(null)}; ed.undoPx=[]; drawPx(); };
+$('edSize').oninput=e=>ed.size=+e.target.value;
+$('edColor').oninput=e=>setEdColor(e.target.value);
+setEdZoom(1); }
+function setEdColor(c){ ed.color=c; $('edColor').value=c; }
+function setEdTool(t){ ed.tool=t;
+document.querySelectorAll('.ed-btn.tool').forEach(b=>b.classList.toggle('sel',b.dataset.tool===t)); }
+function setEdMode(m){ ed.mode=m;
+document.querySelectorAll('.ed-btn.mode').forEach(b=>b.classList.toggle('sel',b.dataset.mode===m));
+$('pxSize').style.display=m==='pixel'?'':'none';
+$('sizeGroup').style.opacity=m==='pixel'?'.35':'1';
+document.querySelectorAll('.shape-only').forEach(b=>b.style.display=m==='pixel'?'none':'');
+edCanvas.classList.toggle('pxmode',m==='pixel');
+if(m==='pixel'){ if(!ed.px||ed.px.n!==ed.pxN) ed.px={n:ed.pxN,cells:Array(ed.pxN*ed.pxN).fill(null)};
+drawPx(); } else loadSpriteToCanvas(); }
+function switchTab(t){ if(t===activeTab)return;
+if(activeTab==='draw') applyToSprite(true);
+activeTab=t;
+$('tabCode').classList.toggle('sel',t==='code');
+$('tabDraw').classList.toggle('sel',t==='draw');
+$('tabSettings').classList.toggle('sel',t==='settings');
+$('wsWrap').style.display=t==='code'?'':'none';
+$('editor').style.display=t==='draw'?'flex':'none';
+$('settingsPane').style.display=t==='settings'?'block':'none';
+if(t==='settings'){ $('edName').textContent='Настройки сцены, границ и темы'; }
+else if(t==='draw') openEditorFor(current);
+else { $('edName').textContent=''; saveWs(); Blockly.svgResize(workspace); sizeExtBtn(); } }
+function openEditorFor(sp){ if(!sp)return; $('edName').textContent=
+bgEditMode?'🌄 Рисуем ФОН для сцены':'Редактируем: '+(sp.emoji||'🖼️')+' '+sp.name;
+if(ed.mode==='pixel'){ ed.px=sp.px&&sp.px.n===ed.pxN ? sp.px : {n:ed.pxN,cells:Array(ed.pxN*ed.pxN).fill(null)};
+ed.undoPx=[]; drawPx(); }
+else { ed.undoN=[]; loadSpriteToCanvas(); } }
+function loadSpriteToCanvas(){ edCtx.clearRect(0,0,480,360);
+if(bgEditMode)return;
+if(!current)return;
+if(current.img){ const im=new Image();
+im.onload=()=>{ const s=Math.min(460/im.width,340/im.height,3);
+const w=im.width*s,h=im.height*s;
+edCtx.imageSmoothingEnabled=!current.pixel;
+edCtx.drawImage(im,(480-w)/2,(360-h)/2,w,h); };
+im.src=current.img; }
+else if(current.emoji){ edCtx.save(); edCtx.font='200px serif';
+edCtx.textAlign='center'; edCtx.textBaseline='middle';
+edCtx.fillText(current.emoji,240,190); edCtx.restore(); } }
+function pushUndo(){ if(ed.mode==='pixel')
+ed.undoPx.push(ed.px.cells.slice()), ed.undoPx.length>50&&ed.undoPx.shift();
+else ed.undoN.push(edCtx.getImageData(0,0,480,360)), ed.undoN.length>25&&ed.undoN.shift(); }
+function edUndo(){ if(ed.mode==='pixel'){ const c=ed.undoPx.pop(); if(c){ed.px.cells=c;drawPx();} }
+else { const c=ed.undoN.pop(); if(c)edCtx.putImageData(c,0,0); } }
+function edClear(){ pushUndo();
+if(ed.mode==='pixel'){ ed.px.cells.fill(null); drawPx(); }
+else edCtx.clearRect(0,0,480,360); }
+function canvasPt(e){ const r=edCanvas.getBoundingClientRect();
+return {x:(e.clientX-r.left)*480/r.width, y:(e.clientY-r.top)*360/r.height}; }
+function hexRgb(h){ h=String(h).replace('#',''); if(h.length===3)h=h.split('').map(c=>c+c).join('');
+const n=parseInt(h,16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+function floodFill(x,y){ x|=0;y|=0;
+const img=edCtx.getImageData(0,0,480,360), d=img.data, i0=(y*480+x)*4;
+const tr=d[i0],tg=d[i0+1],tb=d[i0+2],ta=d[i0+3], [fr,fg,fb]=hexRgb(ed.color);
+if(tr===fr&&tg===fg&&tb===fb&&ta===255)return;
+const tol2=4*45*45;
+const match=i=>{ const a=d[i]-tr,b=d[i+1]-tg,c=d[i+2]-tb,e=d[i+3]-ta;
+return a*a+b*b+c*c+e*e<tol2; };
+const stack=[[x,y]];
+while(stack.length){ const [cx,cy]=stack.pop();
+if(cx<0||cy<0||cx>=480||cy>=360)continue;
+const i=(cy*480+cx)*4; if(!match(i))continue;
+d[i]=fr;d[i+1]=fg;d[i+2]=fb;d[i+3]=255;
+stack.push([cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]); }
+edCtx.putImageData(img,0,0); }
+function drawShape(a,b){ edCtx.strokeStyle=ed.color; edCtx.lineWidth=ed.size;
+edCtx.lineCap='round'; edCtx.beginPath();
+if(ed.tool==='line'){ edCtx.moveTo(a.x,a.y); edCtx.lineTo(b.x,b.y); }
+else if(ed.tool==='rect'){ edCtx.rect(Math.min(a.x,b.x),Math.min(a.y,b.y),
+Math.abs(b.x-a.x),Math.abs(b.y-a.y)); }
+else { edCtx.ellipse((a.x+b.x)/2,(a.y+b.y)/2,Math.abs(b.x-a.x)/2,Math.abs(b.y-a.y)/2,0,0,7); }
+edCtx.stroke(); }
+function strokeTo(p){ edCtx.globalCompositeOperation=ed.tool==='eraser'?'destination-out':'source-over';
+edCtx.strokeStyle=ed.color; edCtx.lineWidth=ed.size;
+edCtx.lineCap='round'; edCtx.lineJoin='round';
+edCtx.beginPath(); edCtx.moveTo(ed.last.x,ed.last.y); edCtx.lineTo(p.x,p.y); edCtx.stroke();
+edCtx.globalCompositeOperation='source-over'; ed.last=p; }
+function pxGeom(){ const n=ed.px.n, cell=Math.floor(352/n);
+return {n,cell,ox:(480-n*cell)/2,oy:(360-n*cell)/2}; }
+function drawPx(){ const {n,cell,ox,oy}=pxGeom();
+edCtx.clearRect(0,0,480,360);
+edCtx.fillStyle='#0b1222';
+edCtx.fillRect(ox-3,oy-3,n*cell+6,n*cell+6);
+for(let i=0;i<n*n;i++){ const c=ed.px.cells[i]; if(!c)continue;
+edCtx.fillStyle=c;
+edCtx.fillRect(ox+(i%n)*cell,oy+Math.floor(i/n)*cell,cell,cell); }
+edCtx.lineWidth=1;
+edCtx.strokeStyle='rgba(96,165,250,.30)'; edCtx.beginPath();
+for(let i=0;i<=n;i++){ if(i%8===0)continue;
+edCtx.moveTo(ox+i*cell+.5,oy); edCtx.lineTo(ox+i*cell+.5,oy+n*cell);
+edCtx.moveTo(ox,oy+i*cell+.5); edCtx.lineTo(ox+n*cell,oy+i*cell+.5); }
+edCtx.stroke();
+edCtx.strokeStyle='rgba(96,165,250,.85)'; edCtx.beginPath();
+for(let i=0;i<=n;i+=8){
+edCtx.moveTo(ox+i*cell+.5,oy); edCtx.lineTo(ox+i*cell+.5,oy+n*cell);
+edCtx.moveTo(ox,oy+i*cell+.5); edCtx.lineTo(ox+n*cell,oy+i*cell+.5); }
+edCtx.stroke();
+edCtx.strokeStyle='#60a5fa'; edCtx.lineWidth=2;
+edCtx.strokeRect(ox-2,oy-2,n*cell+4,n*cell+4); }
+function pxCell(e){ const p=canvasPt(e), {n,cell,ox,oy}=pxGeom();
+const cx=Math.floor((p.x-ox)/cell), cy=Math.floor((p.y-oy)/cell);
+if(cx<0||cy<0||cx>=n||cy>=n)return -1; return cy*n+cx; }
+function pxFlood(start,c){ const tgt=ed.px.cells[start]; if(tgt===c)return;
+const n=ed.px.n, stack=[start];
+while(stack.length){ const i=stack.pop(); if(ed.px.cells[i]!==tgt)continue;
+ed.px.cells[i]=c; const x=i%n,y=(i/n)|0;
+if(x>0)stack.push(i-1); if(x<n-1)stack.push(i+1);
+if(y>0)stack.push(i-n); if(y<n-1)stack.push(i+n); } }
+function pxToImage(){ const n=ed.px.n, off=document.createElement('canvas');
+off.width=n; off.height=n; const c2=off.getContext('2d');
+ed.px.cells.forEach((c,i)=>{ if(!c)return; c2.fillStyle=c; c2.fillRect(i%n,(i/n)|0,1,1); });
+return off.toDataURL(); }
+edCanvas.addEventListener('pointerdown',e=>{ e.preventDefault();
+edCanvas.setPointerCapture(e.pointerId); const p=canvasPt(e);
+if(ed.mode==='pixel'){ const c=pxCell(e); if(c<0)return;
+ed.down=true; ed.lastCell=c;
+if(ed.tool==='fill'){ pushUndo(); pxFlood(c,ed.color); drawPx(); return; }
+if(ed.tool==='picker'){ const col=ed.px.cells[c]; if(col)setEdColor(col); setEdTool('brush'); return; }
+pushUndo(); ed.px.cells[c]=ed.tool==='eraser'?null:ed.color; drawPx(); return; }
+if(ed.tool==='fill'){ pushUndo(); floodFill(p.x,p.y); return; }
+if(ed.tool==='picker'){ const d=edCtx.getImageData(p.x|0,p.y|0,1,1).data;
+if(d[3]>0) setEdColor('#'+[d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join(''));
+setEdTool('brush'); return; }
+pushUndo(); ed.drawing=true;
+if(ed.tool==='brush'||ed.tool==='eraser'){ ed.last=p; strokeTo({x:p.x+.01,y:p.y}); }
+else ed.snap=edCtx.getImageData(0,0,480,360); });
+edCanvas.addEventListener('pointermove',e=>{ if(!ed.down&&!ed.drawing)return;
+if(ed.mode==='pixel'){ const c=pxCell(e); if(c<0||c===ed.lastCell)return;
+ed.lastCell=c;
+if(ed.tool==='brush')ed.px.cells[c]=ed.color;
+else if(ed.tool==='eraser')ed.px.cells[c]=null;
+drawPx(); return; }
+const p=canvasPt(e);
+if(ed.tool==='brush'||ed.tool==='eraser') strokeTo(p);
+else if(ed.snap){ edCtx.putImageData(ed.snap,0,0); drawShape(ed.last,p); } });
+const edUp=()=>{ ed.down=false; ed.drawing=false; ed.snap=null; ed.lastCell=null; };
+edCanvas.addEventListener('pointerup',edUp);
+edCanvas.addEventListener('pointercancel',edUp);
+$('fileEdImg').onchange=async e=>{ const f=e.target.files[0]; if(!f)return;
+const url=await readFile(f), im=new Image();
+im.onload=()=>{
+if(ed.mode==='pixel'){ const n=ed.px.n, off=document.createElement('canvas');
+off.width=n; off.height=n; const c2=off.getContext('2d');
+c2.drawImage(im,0,0,n,n); const d=c2.getImageData(0,0,n,n).data;
+pushUndo();
+for(let i=0;i<n*n;i++){ const a=d[i*4+3];
+ed.px.cells[i]=a>120?('#'+[d[i*4],d[i*4+1],d[i*4+2]]
+.map(v=>v.toString(16).padStart(2,'0')).join('')):null; }
+drawPx(); toast('Картинка превращена в пиксель-арт! 🟩'); }
+else { pushUndo(); edCtx.clearRect(0,0,480,360);
+const s=Math.min(460/im.width,340/im.height,3), w=im.width*s, h=im.height*s;
+edCtx.drawImage(im,(480-w)/2,(360-h)/2,w,h);
+toast('Картинка загружена в редактор 📁'); } };
+im.src=url; e.target.value=''; };
+function canvasEmpty(){ const d=edCtx.getImageData(0,0,480,360).data;
+for(let i=3;i<d.length;i+=4) if(d[i]>0) return false; return true; }
+function currentLookFromEditor(){
+if(ed.mode==='pixel'){ if(ed.px.cells.some(c=>c)) return {img:pxToImage(),pixel:true,px:ed.px}; }
+else if(!canvasEmpty()) return {img:edCanvas.toDataURL(),pixel:false};
+return null; }
+function applyToSprite(silent,asCostume){ if(!current||bgEditMode)return;
+const look=currentLookFromEditor();
+if(look){
+if(asCostume){ addCostume(look); }
+else{
+current.img=look.img; current.pixel=look.pixel; current.emoji=''; current.px=look.px||null;
+const c=current.costumes[current.costumeIndex];
+if(c){ c.img=look.img; c.pixel=look.pixel; c.emoji=''; c.px=look.px||null; }
+current._alphaUrl=null; current._alpha=null;
+if(!silent) toast('Спрайт обновлён! ✅'); } }
+renderSprites(); renderSpritePanel(); renderCostumes(); }
+/* ===== ПОЛНЫЙ ЭКРАН ===== */
+function toggleFullscreen(){
+if(document.fullscreenElement){ document.exitFullscreen(); return; }
+if(stagePanel.requestFullscreen) stagePanel.requestFullscreen().catch(()=>fsFallback());
+else fsFallback(); }
+function fsFallback(){ stagePanel.classList.add('fs-fallback'); updateStageScale(); }
+function isFs(){ return !!document.fullscreenElement||stagePanel.classList.contains('fs-fallback'); }
+function updateStageScale(){
+const wrap=$('stageWrap');
+if(isFs()){ const s=Math.min((innerWidth-60)/480,(innerHeight-170)/360);
+stage.style.transform='scale('+s+')';
+wrap.style.width=(480*s)+'px'; wrap.style.height=(360*s)+'px';
+$('fsBtn').textContent='🡼'; $('fsBtn').title='Выйти из полного экрана'; }
+else { stage.style.transform='';
+wrap.style.width='480px'; wrap.style.height='360px';
+$('fsBtn').textContent='⛶'; $('fsBtn').title='На весь экран'; } }
+document.addEventListener('fullscreenchange',updateStageScale);
+window.addEventListener('resize',()=>{ if(isFs())updateStageScale(); sizeExtBtn(); });
+window.addEventListener('keydown',e=>{ if(e.key==='Escape'&&stagePanel.classList.contains('fs-fallback'))
+{ stagePanel.classList.remove('fs-fallback'); updateStageScale(); } });
+/* ===== УРОКИ: 12 штук, 3 уровня ===== */
+const LESSONS=[
+{em:'👋',title:'Первые шаги',level:1,chips:['🚩 События','👁️ Внешность','🏃 Движение'],
+goal:'Научись запускать программу и собирать её из блоков, как из конструктора!',
+steps:['Открой вкладку <b>💻 Код</b>. Слева — палитра категорий, справа — рабочая область.',
+'Перетащи из <b>🚩 События</b> блок «когда 🏁 нажат» в рабочую область — это «шапка» скрипта.',
+'Прицепи снизу блок «говорить … 2 секунд» из <b>👁️ Внешность</b> (блоки сцепляются как конструктор).',
+'Добавь «идти 100 шагов» из <b>🏃 Движение</b>.',
+'Нажми зелёный флажок 🏁 над сценой — кот заговорит и пойдёт!',
+'Поменяй числа внутри блоков и запусти снова — увидишь, как меняется поведение.'],
+task:'🌟 Задание: заставь кота пройти буквой «П» (идти → повернуть → идти).',
+sample:'<block type="ev_flag" x="30" y="30"><next><block type="say_for"><value name="TEXT"><shadow type="text"><field name="TEXT">Привет! Я учусь программировать 😺</field></shadow></value><value name="SECS"><shadow type="math_number"><field name="NUM">2</field></shadow></value><next><block type="move_steps"><value name="STEPS"><shadow type="math_number"><field name="NUM">100</field></shadow></value><next><block type="turn_r"><value name="DEGREES"><shadow type="math_number"><field name="NUM">90</field></shadow></value><next><block type="move_steps"><value name="STEPS"><shadow type="math_number"><field name="NUM">60</field></shadow></value></block></next></block></next></block></next></block></next></block>'},
+{em:'🟦',title:'Рисуем квадрат',level:1,chips:['🎛️ Циклы','🏃 Движение'],
+goal:'Циклы повторяют действия — не нужно писать одно и то же много раз!',
+steps:['Цикл — это блок «повторить N раз» из <b>🎛️ Управление</b>.',
+'Положи ВНУТРЬ цикла два блока: «идти 80 шагов» и «повернуть ↻ на 90 градусов».',
+'Нажми 🏁 — спрайт обойдёт квадрат и вернётся в начало!',
+'Добавь внутрь «ждать 0.3 секунд», чтобы видеть каждый шаг.',
+'Меняй число повторов: 3 → треугольник, 6 → шестиугольник, 36 → почти круг.'],
+task:'🌟 Задание: нарисуй треугольник (3 раза по 120°) и круг (36 раз: 10 шагов + 10°).',
+sample:'<block type="ev_flag" x="30" y="30"><next><block type="repeat"><value name="TIMES"><block type="math_number"><field name="NUM">4</field></block></value><statement name="DO"><block type="move_steps"><value name="STEPS"><shadow type="math_number"><field name="NUM">80</field></shadow></value><next><block type="turn_r"><value name="DEGREES"><shadow type="math_number"><field name="NUM">90</field></shadow></value><next><block type="wait"><value name="SECS"><shadow type="math_number"><field name="NUM">0.3</field></shadow></value></block></next></block></next></block></statement></block></next></block>'},
+{em:'💃',title:'Бесконечный танец',level:1,chips:['🎛️ Циклы','🔊 Звук'],
+goal:'Цикл «повторять всегда» никогда не останавливается — устроим дискотеку!',
+steps:['Блок «повторять всегда» из <b>🎛️ Управление</b> работает, пока не нажмёшь ⛔ стоп.',
+'Положи внутрь: «повернуть ↻ на 15°» и «ждать 0.1 секунд» — получится плавное вращение.',
+'Добавь «играть звук Барабан 🥁» и ещё одно ожидание — появится ритм!',
+'Нажми 🏁 и танцуй! Остановить можно только красной кнопкой ⛔.',
+'Хочешь музыку? Нажми ✳️ внизу палитры и добавь дополнение «🎵 Музыка».'],
+task:'🌟 Задание: добавь ВТОРЫМ скриптом (ещё одна шапка 🏁) изменение размера туда-сюда — пусть спрайт «дышит».',
+sample:'<block type="ev_flag" x="30" y="30"><next><block type="forever"><statement name="DO"><block type="turn_r"><value name="DEGREES"><shadow type="math_number"><field name="NUM">15</field></shadow></value><next><block type="wait"><value name="SECS"><shadow type="math_number"><field name="NUM">0.1</field></shadow></value><next><block type="play_sound"><field name="SOUND">drum</field><next><block type="wait"><value name="SECS"><shadow type="math_number"><field name="NUM">0.3</field></shadow></value></block></next></block></next></block></next></block></statement></block></next></block>'},
+{em:'✨',title:'Волшебные эффекты',level:1,chips:['👁️ Внешность','🎛️ Циклы'],
+goal:'Меняй цвет, прозрачность и размер — создаём настоящую магию!',
+steps:['Блок «изменить эффект цвет на 20» из <b>👁️ Внешность</b> перекрашивает спрайт.',
+'Оберни его в «повторять всегда» с «ждать 0.05» — спрайт переливается радугой!',
+'Вторым скриптом добавь «изменить размер на 5» и «на −5» с ожиданием — спрайт пульсирует.',
+'Помни: несколько скриптов с одним 🏁 работают ОДНОВРЕМЕННО!',
+'Блок «убрать эффекты» возвращает всё как было.'],
+task:'🌟 Задание: сделай спрайт-дискотечный шар: цвет + размер + призрак (прозрачность) одновременно.',
+sample:'<block type="ev_flag" x="20" y="20"><next><block type="forever"><statement name="DO"><block type="change_effect"><value name="DE"><shadow type="math_number"><field name="NUM">20</field></shadow></value><next><block type="wait"><value name="SECS"><shadow type="math_number"><field name="NUM">0.05</field></shadow></value></block></next></block></statement></block></next></block><block type="ev_flag" x="300" y="20"><next><block type="forever"><statement name="DO"><block type="change_size"><value name="DS"><shadow type="math_number"><field name="NUM">5</field></shadow></value><next><block type="wait"><value name="SECS"><shadow type="math_number"><field name="NUM">0.15</field></shadow></value><next><block type="change_size"><value name="DS"><shadow type="math_number"><field name="NUM">-5</field></shadow></value><next><block type="wait"><value name="SECS"><shadow type="math_number"><field name="NUM">0.15</field></shadow></value></block></next></block></next></block></next></block></statement></block></next></block>'},
+{em:'🏆',title:'Счёт очков',level:2,chips:['📦 Переменные','🚩 События'],
+goal:'Переменные — это «коробочки» для чисел. Сделаем настоящий кликер!',
+steps:['Открой <b>📦 Переменные</b> и нажми «➕ Создать переменную», назови её «очки».',
+'На сцене появится счётчик — это и есть переменная.',
+'Возьми шапку «когда спрайт нажат» из <b>🚩 События</b>.',
+'Прицепи «изменить очки на 1» и «говорить Ура! 1 секунд».',
+'Нажми 🏁 и кликай по коту на сцене — счёт растёт!',
+'Кнопкой «показать/спрятать переменную» управляй счётчиком на сцене.'],
+task:'🌟 Задание: добавь второго спрайта-«антикликер», который уменьшает очки при клике.',
+vars:['очки'],
+sample:'<block type="ev_click" x="30" y="30"><next><block type="variables_change"><field name="VAR">очки</field><value name="VALUE"><shadow type="math_number"><field name="NUM">1</field></shadow></value><next><block type="say_for"><value name="TEXT"><shadow type="text"><field name="TEXT">Ура! 🎉</field></shadow></value><value name="SECS"><shadow type="math_number"><field name="NUM">1</field></shadow></value><next><block type="play_sound"><field name="SOUND">tada</field></block></next></block></next></block></next></block>'},
+{em:'🎮',title:'Управление стрелками',level:2,chips:['🚩 События','⌨️ Клавиатура','🏃 Движение'],
+goal:'Оживи спрайт клавиатурой — это почти настоящая игра!',
+steps:['Создай 4 шапки «когда клавиша … нажата» из <b>🚩 События</b> — по одной на стрелку.',
+'К стрелке ↑ прицепи «изменить y на 15», к ↓ — «изменить y на −15».',
+'К ← и → прицепи «изменить x на −15» и «изменить x на 15».',
+'В списке клавиш — вся клавиатура: буквы, цифры, пробел, F1–F12!',
+'Нажми 🏁 один раз, а дальше управляй спрайтом стрелками.'],
+task:'🌟 Задание: устрой гонки двух спрайтов — один на стрелках, второй на WASD (клавиши w,a,s,d).',
+sample:'<block type="ev_key" x="20" y="20"><field name="KEY">arrowup</field><next><block type="change_y"><value name="DY"><shadow type="math_number"><field name="NUM">15</field></shadow></value></block></next></block><block type="ev_key" x="20" y="150"><field name="KEY">arrowdown</field><next><block type="change_y"><value name="DY"><shadow type="math_number"><field name="NUM">-15</field></shadow></value></block></next></block><block type="ev_key" x="230" y="20"><field name="KEY">arrowleft</field><next><block type="change_x"><value name="DX"><shadow type="math_number"><field name="NUM">-15</field></shadow></value></block></next></block><block type="ev_key" x="230" y="150"><field name="KEY">arrowright</field><next><block type="change_x"><value name="DX"><shadow type="math_number"><field name="NUM">15</field></shadow></value></block></next></block>'},
+{em:'🎯',title:'Догони мышку!',level:2,chips:['🖱️ Сенсоры','⚙️ Условия','🎛️ Циклы'],
+goal:'Сенсоры сообщают координаты мыши — научим спрайт гнаться за курсором.',
+steps:['Блоки «мышь x» и «мышь y» из <b>🖱️ Сенсоры</b> — это координаты курсора на сцене.',
+'Внутри «повторять всегда» поставь 4 блока «если … то» из <b>🎛️ Управление</b>.',
+'Условие: «x положение &lt; мышь x» → действие «изменить x на 4». Так же для &gt;, и для y.',
+'Получится преследование: спрайт всегда бежит к курсору!',
+'Усложни: меняй скорость через переменную «скорость» вместо числа 4.'],
+task:'🌟 Задание: добавь второго спрайта-убегалку, который движется ОТ мыши (знаки наоборот).',
+sample:'<block type="ev_flag" x="20" y="20"><next><block type="forever"><statement name="DO"><block type="if_then"><value name="COND"><block type="compare"><value name="A"><block type="x_pos"/></block><field name="OP">LT</field><value name="B"><block type="mouse_x"/></block></block></value><statement name="DO"><block type="change_x"><value name="DX"><block type="math_number"><field name="NUM">4</field></block></value></block></statement><next><block type="if_then"><value name="COND"><block type="compare"><value name="A"><block type="x_pos"/></block><field name="OP">GT</field><value name="B"><block type="mouse_x"/></block></block></value><statement name="DO"><block type="change_x"><value name="DX"><block type="math_number"><field name="NUM">-4</field></block></value></block></statement><next><block type="if_then"><value name="COND"><block type="compare"><value name="A"><block type="y_pos"/></block><field name="OP">LT</field><value name="B"><block type="mouse_y"/></block></block></value><statement name="DO"><block type="change_y"><value name="DY"><block type="math_number"><field name="NUM">4</field></block></value></block></statement><next><block type="if_then"><value name="COND"><block type="compare"><value name="A"><block type="y_pos"/></block><field name="OP">GT</field><value name="B"><block type="mouse_y"/></block></block></value><statement name="DO"><block type="change_y"><value name="DY"><block type="math_number"><field name="NUM">-4</field></block></value></block></statement></block></next></block></next></block></next></block></statement></block></next></block>'},
+{em:'💬',title:'Разговор с игроком',level:2,chips:['🖱️ Сенсоры','⚙️ Операторы','🎛️ Условия'],
+goal:'Научи спрайт задавать вопросы и понимать ответы игрока!',
+steps:['Блок «спрашивать … и ждать» из <b>🖱️ Сенсоры</b> показывает окошко вопроса.',
+'Ответ игрока хранится в блоке «ответ» — его можно вставлять куда угодно.',
+'Склей текст блоком «объединить … …» из <b>⚙️ Операторы</b>: «Привет, » + «ответ».',
+'Вставь склейку в «говорить …» — спрайт поздоровается по имени!',
+'Добавь ветку: «если ответ = да» → радоваться, «иначе» → думать.'],
+task:'🌟 Задание: сделай мини-викторину из 3 вопросов с реакцией на каждый ответ.',
+sample:'<block type="ev_flag" x="30" y="30"><next><block type="ask_wait"><value name="TEXT"><shadow type="text"><field name="TEXT">Как тебя зовут?</field></shadow></value><next><block type="say_for"><value name="TEXT"><block type="join"><value name="A"><shadow type="text"><field name="TEXT">Привет, </field></shadow></value><value name="B"><block type="answer"/></value></block></value><value name="SECS"><shadow type="math_number"><field name="NUM">3</field></shadow></value><next><block type="ask_wait"><value name="TEXT"><shadow type="text"><field name="TEXT">Тебе нравится КотКод?</field></shadow></value><next><block type="if_else"><value name="COND"><block type="compare"><value name="A"><block type="answer"/></block><field name="OP">EQ</field><value name="B"><shadow type="text"><field name="TEXT">да</field></shadow></value></block></value><statement name="DO"><block type="say_for"><value name="TEXT"><shadow type="text"><field name="TEXT">Ура! Я тоже обожаю! 😻</field></shadow></value><value name="SECS"><shadow type="math_number"><field name="NUM">2</field></shadow></value></block></statement><statement name="ELSE"><block type="think_for"><value name="TEXT"><shadow type="text"><field name="TEXT">Хм... попробуй ещё разок!</field></shadow></value><value name="SECS"><shadow type="math_number"><field name="NUM">2</field></shadow></value></block></statement></block></next></block></next></block></next></block></next></block>'},
+{em:'✏️',title:'Перо: волшебные узоры',level:2,ext:'pen',chips:['✏️ Перо','🎛️ Циклы'],
+goal:'Перо рисует линию за спрайтом — построим спирограф без кисточки!',
+steps:['Нажми ✳️ внизу палитры и добавь дополнение «✏️ Перо» — категория появится внизу.',
+'Блок «опустить перо» — и спрайт оставляет цветной след, когда движется.',
+'Построй цикл в цикле: внешний «повторить 12», внутренний рисует квадрат (4 раза: 70 шагов + 90°).',
+'После каждого квадрата поворачивай на 30° — получится кружевной узор!',
+'Меняй цвет блоками «задать цвет пера» или «изменить цвет пера на 10».',
+'«стереть всё нарисованное» очищает сцену — поставь его в начало скрипта.'],
+task:'🌟 Задание: нарисуй узор из треугольников (3×120°) и раскрась каждый виток новым цветом.',
+sample:'<block type="ev_flag" x="30" y="30"><next><block type="pen_clear"><next><block type="pen_down"><next><block type="set_pen_color"><field name="COLOR">#3b82f6</field><next><block type="repeat"><value name="TIMES"><block type="math_number"><field name="NUM">12</field></block></value><statement name="DO"><block type="repeat"><value name="TIMES"><block type="math_number"><field name="NUM">4</field></block></value><statement name="DO"><block type="move_steps"><value name="STEPS"><shadow type="math_number"><field name="NUM">70</field></shadow></value><next><block type="turn_r"><value name="DEGREES"><shadow type="math_number"><field name="NUM">90</field></shadow></value></block></next></block></statement><next><block type="change_pen_color"><value name="HUE"><block type="math_number"><field name="NUM">25</field></block></value><next><block type="turn_r"><value name="DEGREES"><block type="math_number"><field name="NUM">30</field></block></value></block></next></block></next></block></statement></block></next></block></next></block></next></block></next></block>'},
+{em:'🎵',title:'Настоящая мелодия',level:3,ext:'music',chips:['🎵 Музыка','⏱ Темп'],
+goal:'Сочини собственную мелодию из нот, инструментов и барабанов!',
+steps:['Добавь дополнение «🎵 Музыка» кнопкой ✳️ внизу палитры.',
+'Блок «играть ноту … … такта»: 60 = до, 62 = ре, 64 = ми, 67 = соль, 72 = до выше.',
+'Ноты ставь ДРУГ ЗА ДРУГОМ — они сыграются по очереди, как в песне.',
+'«задать темп 120» ускоряет мелодию, «инструмент» меняет голос: пианино, гитара, флейта…',
+'«пауза … такта» — это тишина между нотами, без неё мелодия сливается.',
+'В конце добавь барабан «бочка 🥁» — получится финальный аккорд!'],
+task:'🌟 Задание: сочини мотив из 8 нот и сыграй его двумя инструментами по очереди.',
+sample:'<block type="ev_flag" x="30" y="30"><next><block type="set_instrument"><field name="INSTR">piano</field><next><block type="set_tempo"><value name="T"><shadow type="math_number"><field name="NUM">120</field></shadow></value><next><block type="play_note"><value name="NOTE"><shadow type="note_of"><field name="NOTE">60</field></shadow></value><value name="BEATS"><shadow type="math_number"><field name="NUM">0.5</field></shadow></value><next><block type="play_note"><value name="NOTE"><shadow type="note_of"><field name="NOTE">64</field></shadow></value><value name="BEATS"><shadow type="math_number"><field name="NUM">0.5</field></shadow></value><next><block type="play_note"><value name="NOTE"><shadow type="note_of"><field name="NOTE">67</field></shadow></value><value name="BEATS"><shadow type="math_number"><field name="NUM">0.5</field></shadow></value><next><block type="play_note"><value name="NOTE"><shadow type="note_of"><field name="NOTE">72</field></shadow></value><value name="BEATS"><shadow type="math_number"><field name="NUM">1</field></shadow></value><next><block type="play_drum"><field name="DRUM">kick</field></block></next></block></next></block></next></block></next></block></next></block></next></block>'},
+{em:'🐝',title:'Рой клонов',level:3,chips:['🎛️ Клоны','🎛️ Циклы'],
+goal:'Клоны — это копии спрайта во время игры. Создадим целый рой!',
+steps:['Блок «создать клон я сам» из <b>🎛️ Управление</b> делает копию спрайта прямо во время игры.',
+'Сделай цикл 8 раз: создать клон → идти 40 шагов → повернуть на 45° — клоны встанут по кругу.',
+'Шапка «когда я начинаю как клон» — это скрипт, который выполнит КАЖДЫЙ клон.',
+'Внутри неё: «повторять всегда» → поворот на 10° + изменение размера — рой закружится!',
+'«удалить этот клон» убирает копию, а «количество клонов» считает, сколько их сейчас.'],
+task:'🌟 Задание: сделай клоны разноцветными (эффект цвет случайным числом) и разного размера.',
+sample:'<block type="ev_flag" x="30" y="30"><next><block type="repeat"><value name="TIMES"><block type="math_number"><field name="NUM">8</field></block></value><statement name="DO"><block type="create_clone"><field name="SPRITE">myself</field><next><block type="move_steps"><value name="STEPS"><shadow type="math_number"><field name="NUM">40</field></shadow></value><next><block type="turn_r"><value name="DEGREES"><shadow type="math_number"><field name="NUM">45</field></shadow></value></block></next></block></next></block></statement></block></next></block><block type="when_clone" x="330" y="30"><next><block type="forever"><statement name="DO"><block type="turn_r"><value name="DEGREES"><shadow type="math_number"><field name="NUM">10</field></shadow></value><next><block type="change_effect"><value name="DE"><shadow type="math_number"><field name="NUM">15</field></shadow></value></block></next></block></statement></block></next></block>'},
+{em:'🧩',title:'Свой блок и дополнения',level:3,chips:['🧩 Свои блоки','✳️ Дополнения'],
+goal:'Создай СОБСТВЕННЫЙ блок-команду и подключи дополнения — ты теперь как настоящий разработчик!',
+steps:['Нажми кнопку ✳️ в самом низу палитры блоков — откроется окно дополнений во весь экран.',
+'Выбери карточку «Перо» или «Музыка» — категория появится внизу палитры через разделитель.',
+'Открой категорию <b>🧩 Другие блоки</b> и нажми кнопку «Создать блок».',
+'Введи название, добавь значения (круглые/шестиугольные отверстия) или подписи, нажми ОК.',
+'В рабочую область упадёт розовая шапка «определить …» — прицепи к ней команды-тело блока.',
+'Теперь используй свой блок в любых скриптах: он работает как обычная команда!',
+'Галочка «запустить без обновления экрана» ускоряет блок (как «выполнить без перерисовки»).'],
+task:'🌟 Задание: создай блок «квадрат» со значением «сторона» и нарисуй им узор пером из урока 9.'}
+];
+let lessonIdx=0;
+const LV_NAMES={1:'🌱 Новичок',2:'🌿 Средний',3:'🌳 Про'};
+function openLessons(){ $('lessonModal').classList.add('open'); renderLessonList(); showLesson(lessonIdx); }
+function renderLessonList(){ let html='',cur=0;
+LESSONS.forEach((l,i)=>{
+if(l.level!==cur){ cur=l.level; html+='<div class="lesson-group">'+LV_NAMES[cur]+' · уроки '+
+(LESSONS.findIndex(x=>x.level===cur)+1)+'–'+(LESSONS.length-([...LESSONS].reverse().findIndex(x=>x.level===cur)))+ '</div>'; }
+html+='<div class="lesson-item '+(i===lessonIdx?'sel':'')+'" onclick="showLesson('+i+')">'+
+'<div class="em">'+l.em+'</div><div><div class="t">'+(i+1)+'. '+l.title+'</div>'+
+'<div class="d">'+l.chips.length+' темы · пример внутри</div>'+
+'<span class="lv lv-'+l.level+'">'+LV_NAMES[l.level].slice(2)+'</span></div></div>'; });
+$('lessonList').innerHTML=html; }
+function showLesson(i){ lessonIdx=i; renderLessonList();
+const L=LESSONS[i];
+$('lessonDetail').innerHTML=
+'<h2 style="margin-bottom:10px">'+L.em+' Урок '+(i+1)+'. '+L.title+
+' <span class="lv lv-'+L.level+'" style="vertical-align:middle;margin-left:6px">'+LV_NAMES[L.level]+'</span></h2>'+
+'<div class="goal">🎯 '+L.goal+'</div>'+
+'<div class="chips">'+L.chips.map(c=>'<span class="chip">'+c+'</span>').join('')+'</div>'+
+L.steps.map((s,j)=>'<div class="step"><div class="n">'+(j+1)+'</div><div>'+s+'</div></div>').join('')+
+(L.task?'<div class="task-box">'+L.task+'</div>':'')+
+(L.sample?'<button class="btn btn-primary" onclick="loadLessonSample()">⚡ Загрузить пример в редактор</button>'+
+'<span style="font-size:12px;color:var(--mut);margin-left:10px">код появится у выбранного спрайта, нужные дополнения включатся сами</span>':''); }
+function loadLessonSample(){ const l=LESSONS[lessonIdx]; if(!l.sample)return;
+if(l.ext&&!enabledExt[l.ext]){ enabledExt[l.ext]=true; refreshToolbox(); updateExtCards(); sizeExtBtn(); }
+switchTab('code');
+(l.vars||[]).forEach(v=>{ if(!workspace.getVariable(v)) workspace.createVariable(v); });
+workspace.clear();
+Blockly.Xml.domToWorkspace(strToXml('<xml xmlns="https://developers.google.com/blockly/XML">'+l.sample+'</xml>'),workspace);
+saveWs();
+lessonModal.classList.remove('open'); toast('Пример загружен — нажми 🏁!'); }
+/* ===== СОХРАНЕНИЕ ===== */
+async function saveProject(){ saveWs();
+if(activeTab==='draw'&&!bgEditMode) applyToSprite(true);
+sprites.forEach(s=>s.say=null);
+const name=await askValue('Название проекта:',projectName,'💾 Сохранение');
+if(name===null)return;
+projectName=name.trim()||projectName; updateProjChip();
+doSaveProject(); }
+function doSaveProject(){
+const safe=(projectName.replace(/[\\/:*?"<>|]/g,'-').slice(0,60)||'kotkod-project');
+const data={app:'kotkod',v:7,projectName,sprites,currentId:current?current.id:null,
+bgId:currentBgId,customBg,customSounds,vars,lists,walls,music,globalVolume,theme:curTheme,
+ext:enabledExt,customBlocks};
+const a=document.createElement('a');
+a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));
+a.download=safe+'.json'; a.click(); toast('Проект «'+projectName+'» сохранён 💾'); }
+$('fileProject').onchange=async e=>{ const f=e.target.files[0]; if(!f)return;
+try{ const d=JSON.parse(await f.text());
+stopEverything();
+sprites=(d.sprites||[]).map(s=>makeSprite(s));
+if(!sprites.length)sprites.push(makeSprite({emoji:'🐱',name:'Кот'}));
+customBg=d.customBg||[]; customSounds=d.customSounds||[]; vars=d.vars||{}; lists=d.lists||{};
+walls=Object.assign({top:true,bottom:true,left:true,right:true},d.walls||{});
+music=Object.assign({tempo:60,instrument:'piano'},d.music||{});
+globalVolume=(d.globalVolume==null?100:d.globalVolume);
+enabledExt=Object.assign({music:false,pen:false},d.ext||{});
+customBlocks=(d.customBlocks||[]); customBlocks.forEach(defineCustomBlockTypes);
+if(d.theme) setTheme(d.theme);
+projectName=d.projectName||f.name.replace(/\.[^.]+$/,'')||'Мой проект'; updateProjChip();
+Object.keys(vars).forEach(k=>{ const v=vars[k];
+if(v===null||typeof v!=='object') vars[k]={value:v,show:true}; });
+$('setVol').value=globalVolume; $('volLbl').textContent=globalVolume+'%';
+$('setTempo').value=music.tempo;
+renderWalls(); clearPen(); refreshToolbox(); updateExtCards(); sizeExtBtn();
+applyBg(d.bgId&&[...BG_PRESETS,...customBg].some(b=>b.id===d.bgId)?d.bgId:'sky');
+current=sprites.find(s=>s.id===d.currentId)||sprites[0]; loadWs();
+renderAll(); toast('Проект «'+projectName+'» открыт! 📂');
+}catch(err){ console.error(err); toast('Не удалось открыть файл 😿'); }
+e.target.value=''; };
+function newProject(){ if(confirm('Начать новый проект? Несохранённые изменения пропадут.')) location.reload(); }
+function openSpriteModal(mode){ spriteModalMode=mode||'sprite';
+$('spriteModalTitle').textContent=spriteModalMode==='costume'?'🎭 Выбери костюм':'🎭 Выбери спрайта';
+$('emojiGrid').innerHTML=EMOJIS.filter(e=>e).map(e=>
+'<button onclick="pickEmoji(\''+e+'\')">'+e+'</button>').join('');
+$('spriteModal').classList.add('open'); }
+function pickEmoji(e){ if(spriteModalMode==='costume') addCostume({emoji:e});
+else addSprite({emoji:e});
+spriteModal.classList.remove('open'); }
+let toastTimer=null;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show');
+clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2600); }
+function renderAll(){ renderSpritePanel(); renderSprites(); renderVars(); renderCostumes(); renderWalls(); updateBgBtn(); }
+function initSettingsUI(){
+document.querySelectorAll('.wall-btn').forEach(b=>b.onclick=()=>{
+walls[b.dataset.wall]=!walls[b.dataset.wall]; renderWalls(); });
+renderWalls(); setTheme(curTheme); updateExtCards(); }
+function initProject(){
+sprites=[ makeSprite({emoji:'🐱',name:'Кот',x:0,y:0,xml:''}) ];
+current=sprites[0]; loadWs(); applyBg('sky');
+buildEditorUI(); updateProjChip(); renderAll(); sizeExtBtn();
+if(!physStarted){ physStarted=true; setInterval(physTick,33); } }
+initSettingsUI();
+</script>
+</body>
+</html>
